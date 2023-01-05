@@ -6,14 +6,14 @@ import org.bukkit.Material;
 import me.barret.kits.Kit;
 
 
-public class Assasin extends Kit
+public class Assassin extends Kit
 {
-	static String title = "Assasin";
-	static String prefix = ChatColor.YELLOW + "Assasin";
+	static String title = "Assassin";
+	static String prefix = ChatColor.YELLOW + "Assassin";
 	
 	
 	
-    public Assasin()
+    public Assassin()
     {
 
 		super(	title, 

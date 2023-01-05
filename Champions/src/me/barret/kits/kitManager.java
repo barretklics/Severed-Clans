@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import me.barret.Champions;
-import me.barret.kits.type.Assasin;
+import me.barret.kits.type.Assassin;
 import me.barret.kits.type.Brute;
 import me.barret.kits.type.Knight;
 import me.barret.kits.type.Mage;
@@ -23,7 +23,7 @@ public class kitManager {
 	{
 		this.plugin = plugin;
 		
-	    new Assasin();
+	    new Assassin();
 	    new Brute();
 	    new Knight();
 	    new Mage();

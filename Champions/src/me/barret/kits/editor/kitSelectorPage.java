@@ -15,7 +15,7 @@ public class kitSelectorPage extends Gui{
 	private static String mage = kitManager.getKitFromString("Mage").getKitPrefix();
 	private static String mech = kitManager.getKitFromString("Mechanist").getKitPrefix();
 	private static String ranger = kitManager.getKitFromString("Ranger").getKitPrefix();
-	private static String ass = kitManager.getKitFromString("Assasin").getKitPrefix();	
+	private static String ass = kitManager.getKitFromString("Assassin").getKitPrefix();	
 	
 	public kitSelectorPage(Player p) {
 		

@@ -9,11 +9,16 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import me.barret.build.Build;
+import me.barret.energy.EnergyBar;
+import me.barret.energy.energyManager;
 import me.barret.events.TickUpdateEvent;
+import me.barret.rightClick.rightClickManager;
 import me.barret.user.user;
 import me.barret.user.userManager;
 import me.barret.utils.UtilInventory;
 import me.barret.utils.UtilItem;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 public class skillListener implements Listener{
 	
 	public skillListener() {}
@@ -69,19 +74,48 @@ public class skillListener implements Listener{
 				Build b = u.getCurrentSkills();
 				
 				if (b == null) return;
-				if ((p.isHandRaised()) && (b.getSword() instanceof channelSkill))
+				if ((rightClickManager.isHoldingRightClick(p)) && (UtilItem.isSword(UtilInventory.getItemInMainHand(p))) && (b.getSword() instanceof channelSkill))
 				{
 					channelSkill skill = (channelSkill) b.getSword();
 					int level = b.getBuildSkillFromSkill(b.getSword()).getLevel();
 					level = levelBoost(p, level);
 					skill.channel(p, u, level);	
 				}
+				//Display
+				if ((UtilItem.isSword(UtilInventory.getItemInMainHand(p))) && (b.getSword() instanceof channelSkill))
+				{
+					EnergyBar bar = energyManager.getEnergyBar(p, b.getSword().getName());
+					if (bar == null) return;
+					p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(bar.getDisplay()));
+				}
+				
+				
 
 			
 			}
 		}
 	
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	private int levelBoost(Player p, int level)

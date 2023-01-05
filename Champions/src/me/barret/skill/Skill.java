@@ -88,7 +88,7 @@ public class Skill extends ChampionsListener<Champions>{
 		return this;
 	}
 	
-	public Kit getKit() //Returns a kit ex. KitType.BRUTE, KitType.Knight, KitType.Assasin
+	public Kit getKit() //Returns a kit ex. KitType.BRUTE, KitType.Knight, KitType.Assassin
 	
 	{
 		return kit;

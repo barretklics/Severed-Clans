@@ -4,7 +4,6 @@ package me.barret.skill.Mage;
 
 import org.bukkit.entity.Player;
 
-
 import me.barret.Champions;
 import me.barret.cooldown.cooldownManager;
 import me.barret.kits.Kit;
@@ -14,9 +13,9 @@ import me.barret.skill.interactSkill;
 
 import me.barret.user.user;
 
-
+//Author 
 public class FireBlast extends Skill implements interactSkill{
-private static Kit skillKit = kitManager.getKitFromString("Mage");
+	private static Kit skillKit = kitManager.getKitFromString("Mage");
 	
 	private static SkillType skillType = SkillType.AXE;
 	
@@ -42,6 +41,8 @@ private static Kit skillKit = kitManager.getKitFromString("Mage");
 		}
 
 	}
+
+
 
 
 }

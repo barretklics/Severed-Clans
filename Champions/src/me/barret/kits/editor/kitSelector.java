@@ -136,6 +136,11 @@ public class kitSelector implements Listener{
 		
 		if (op.equalsIgnoreCase("Apply")) {
 			userManager.getUser(e.getPlayer().getUniqueId()).setActiveBuild(kit, buildIndex);
+			
+			
+			//ADD EVENT for build change
+			
+			
 			openKitEditor(e.getPlayer(), kit);
 			return;
 		}

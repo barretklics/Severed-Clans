@@ -75,7 +75,7 @@ public class buildManager {
 					null, 
 					12);
 
-		case "Assasin":
+		case "Assassin":
 			return new Build(
 					arg, 
 					null, 
