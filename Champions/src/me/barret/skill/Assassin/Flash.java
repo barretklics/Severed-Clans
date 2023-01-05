@@ -25,7 +25,7 @@ import me.barret.user.userManager;
 //Author: ethvor - first skill started: 12-30-22 finished: 1-1-23
 public class Flash extends Skill implements interactSkill{ //inheritance
 	
-	
+	//the first skill i ever coded
 	private static Kit skillKit = kitManager.getKitFromString("Assassin"); 		//sets class for skill to assassin
 	
 	private static SkillType skillType = SkillType.AXE; 						//sets skill type to axe skill
