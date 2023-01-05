@@ -37,7 +37,7 @@ public class Blizzard extends Skill implements channelSkill{
 	
 	static String skillName = "Blizzard";	
 	
-	static String[] description = {"You fucking","","ice"};	
+	static String[] description = {"You fucking throw","","snow"};
 	
 	static int MaxLevel = 5;
 	
