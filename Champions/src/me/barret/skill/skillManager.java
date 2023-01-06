@@ -6,6 +6,10 @@ import java.util.List;
 
 import me.barret.Champions;
 import me.barret.kits.Kit;
+import me.barret.skill.Assassin.Flash;
+import me.barret.skill.Assassin.Quantize;
+import me.barret.skill.Mage.DivineRay;
+import me.barret.skill.Mechanist.Orthagonal;
 import me.barret.skill.Skill.SkillType;
 import me.barret.skill.Mage.Blizzard;
 import me.barret.skill.Mage.FireBlast;
@@ -35,6 +39,7 @@ public class skillManager {
 	        //Mage
 	        	//Sword
 	        		skills.put("Blizzard", new Blizzard(i));
+					skills.put("Divine Ray", new DivineRay(i));
 	        		
 	        	//Axe
 	        		skills.put("Ice Prison", new IcePrison(i));
@@ -65,7 +70,21 @@ public class skillManager {
 	        	//Axe
 	        		//skills.put("Leap", new Leap(i));
 	        		//skills.put("Warp", new Warp(i));
-	        
+					skills.put("Flash", new Flash(i));
+					skills.put("Quantize", new Quantize(i));
+
+
+			//Mechanist
+				//Sword
+					//
+
+
+
+
+				//Axe
+					skills.put("Orthagonal", new Orthagonal(i));
+
+
 	        
 
 	    }

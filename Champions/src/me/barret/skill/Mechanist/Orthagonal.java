@@ -66,9 +66,9 @@ public class Orthagonal extends Skill implements interactSkill
 	
 	private static HashMap<Player,Yaw> lastYaw = new HashMap<Player,Yaw>();
 	
-	private static HashMap<Player,Boolean> isWallFacingOrthagonal = new HashMap<Player,Boolean>(); //toggled by shift
+	private static HashMap<Player,Boolean> isPreviewFacingOrthagonal = new HashMap<Player,Boolean>(); //toggled by shift
 	
-	private static HashMap<Player, Boolean> wasLastSummonedWallOrthagonal = new HashMap<Player,Boolean>(); //is good for detecting change and not summoning more cubes than necessary
+	private static HashMap<Player, Boolean> wasLastSummonedPreviewOrthagonal = new HashMap<Player,Boolean>(); //is good for detecting change and not summoning more cubes than necessary
 	
 	private static HashMap<Player, Long> timeAtLastActivation = new HashMap<Player, Long>();
 	
@@ -175,7 +175,7 @@ public class Orthagonal extends Skill implements interactSkill
 							{
 								
 								
-								//highlightLocation.add(0,1,0); //puts preview 1 block above ground level - may do this if we can figure out how to summon entities already possessing nbt
+								//highlightLocation.add(0,1,0); //puts preview 1 block above ground level - may do this if we can figure out how to summon entities already possessing nbt - right now it collides and pushes player
 								
 								highlightLocation.add(0,-0.1,0);
 								
@@ -191,7 +191,7 @@ public class Orthagonal extends Skill implements interactSkill
 								//if all three of those havent changed, it does nothing.
 								//if any have changed, it updates the blocks by killing and summoning new blocks.
 								if((Yaw.getYaw(p)==lastYaw.get(p))&&
-								(wasLastSummonedWallOrthagonal.get(p)==isWallFacingOrthagonal.get(p))&&
+								(wasLastSummonedPreviewOrthagonal.get(p)==isPreviewFacingOrthagonal.get(p))&&
 								((highlightLocation.getBlock().getX() == storedGlowLocation.get(p).getBlock().getX())&&
 								(highlightLocation.getBlock().getY() == storedGlowLocation.get(p).getBlock().getY())&&
 								(highlightLocation.getBlock().getZ() == storedGlowLocation.get(p).getBlock().getZ()))) 
@@ -202,7 +202,7 @@ public class Orthagonal extends Skill implements interactSkill
 								{
 									
 									storedGlowLocation.put(p, highlightLocation);
-									wasLastSummonedWallOrthagonal.put(p,isWallFacingOrthagonal.get(p));
+									wasLastSummonedPreviewOrthagonal.put(p,isPreviewFacingOrthagonal.get(p));
 									
 									for(org.bukkit.entity.Entity ent : p.getWorld().getEntities()) {
 										  if(ent instanceof MagmaCube)
@@ -245,7 +245,7 @@ public class Orthagonal extends Skill implements interactSkill
 									
 									//north: negative z --- south: positive z --- east: positive x --- west: negative x
 									
-									if ((Yaw.getYaw(p)==Yaw.WEST||Yaw.getYaw(p)==Yaw.EAST)&&isWallFacingOrthagonal.get(p)==true) //summons north-south wall preview
+									if ((Yaw.getYaw(p)==Yaw.WEST||Yaw.getYaw(p)==Yaw.EAST)&&isPreviewFacingOrthagonal.get(p)==true) //summons north-south wall preview
 									{
 									//	p.sendMessage("inside case 1");
 										
@@ -297,7 +297,7 @@ public class Orthagonal extends Skill implements interactSkill
 
 									}
 									
-									if ((Yaw.getYaw(p)==Yaw.WEST||Yaw.getYaw(p)==Yaw.EAST)&&isWallFacingOrthagonal.get(p)==false) //summons east-west wall preview
+									if ((Yaw.getYaw(p)==Yaw.WEST||Yaw.getYaw(p)==Yaw.EAST)&&isPreviewFacingOrthagonal.get(p)==false) //summons east-west wall preview
 									{
 										//p.sendMessage("inside case 2");
 										
@@ -348,7 +348,7 @@ public class Orthagonal extends Skill implements interactSkill
 										outerNegcase2.setSilent(true);
 									}
 									
-									if ((Yaw.getYaw(p)==Yaw.NORTH||Yaw.getYaw(p)==Yaw.SOUTH)&&isWallFacingOrthagonal.get(p)==true) //summons east-west wall preview
+									if ((Yaw.getYaw(p)==Yaw.NORTH||Yaw.getYaw(p)==Yaw.SOUTH)&&isPreviewFacingOrthagonal.get(p)==true) //summons east-west wall preview
 									{
 										//p.sendMessage("inside case 3");
 										
@@ -399,7 +399,7 @@ public class Orthagonal extends Skill implements interactSkill
 										outerNegcase2.setSilent(true);
 									}
 									
-									if ((Yaw.getYaw(p)==Yaw.NORTH||Yaw.getYaw(p)==Yaw.SOUTH)&&isWallFacingOrthagonal.get(p)==false) //summons north-south wall preview
+									if ((Yaw.getYaw(p)==Yaw.NORTH||Yaw.getYaw(p)==Yaw.SOUTH)&&isPreviewFacingOrthagonal.get(p)==false) //summons north-south wall preview
 									{
 										//p.sendMessage("inside case 4");
 										
@@ -478,7 +478,7 @@ private void cubeInvulnerability(EntityDamageByEntityEvent event)
 	}
 }
 
-@EventHandler
+@EventHandler //toggles orthagonal and parallel viewing modes
 public void SneakOrthSwitch(PlayerToggleSneakEvent event) 
 {
 Player p = event.getPlayer();
@@ -486,15 +486,15 @@ if(isPreviewingWall.get(p))
 {
 	if(p.isSneaking()) 
 	{
-		if (isWallFacingOrthagonal.get(p) == false)
+		if (isPreviewFacingOrthagonal.get(p) == false)
 		{
 			p.sendMessage("swapped to orthogonal wall preview");
-			isWallFacingOrthagonal.put(p, true);
+			isPreviewFacingOrthagonal.put(p, true);
 		}
-		else if (isWallFacingOrthagonal.get(p) == true)
+		else if (isPreviewFacingOrthagonal.get(p) == true)
 		{
 			p.sendMessage("swapped to parallel wall preview");
-		isWallFacingOrthagonal.put(p,false);
+		isPreviewFacingOrthagonal.put(p,false);
 		}
 		
 	}
@@ -502,6 +502,38 @@ if(isPreviewingWall.get(p))
 
 }
 
+
+	@EventHandler
+	private void activateSkill(PlayerInteractEvent event) //if player LEFT clicks while previewing, sets isPreviewingWall to false (cancels preview) and activates skill
+	{
+
+		Player p = event.getPlayer();
+
+		if(isPreviewingWall.get(p))
+		{
+			if (System.currentTimeMillis() >= timeAtLastActivation.get(p) + 20)
+			{
+				if((event.getAction() == Action.LEFT_CLICK_BLOCK) || (event.getAction() == Action.LEFT_CLICK_BLOCK))
+				{
+
+					for(org.bukkit.entity.Entity ent : p.getWorld().getEntities()) {
+						if(ent instanceof MagmaCube)
+							if (ent.getCustomName().equalsIgnoreCase(uuidStorage.get(p)))
+							{
+								ent.teleport(ent.getLocation().add(0,-500,0));
+								ent.remove();
+							}
+
+					}
+					isPreviewingWall.put(p, false);
+					timeAtLastActivation.put(p, System.currentTimeMillis());
+					//
+
+
+				}
+			}
+		}
+	}
 
 
 
@@ -551,7 +583,7 @@ if(isPreviewingWall.get(p))
 					isPreviewingWall.put(p, false);
 					storedGlowLocation.put(p,p.getLocation());
 					uuidStorage.put(p, p.getUniqueId().toString());
-					isWallFacingOrthagonal.put(p,true);
+					isPreviewFacingOrthagonal.put(p,true);
 					timeAtLastActivation.put(p, System.currentTimeMillis());
 				}		
 			}
