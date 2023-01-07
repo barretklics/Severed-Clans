@@ -5,10 +5,7 @@ import java.util.HashMap;
 
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.protocol.packet.ScoreboardObjective;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.MagmaCube;
@@ -43,7 +40,7 @@ public class Orthogonal extends Skill implements interactSkill
 	
 	static String skillName = "Orthogonal";
 	
-	static String[] description = {"Summon a wall of pistons ","at distance to stop your enemies!"};
+	static String[] description = {"Summon a wall of blocks ","at distance to stop your enemies!"};
 	
 	static int MaxLevel = 5;
 	
@@ -141,7 +138,7 @@ public class Orthogonal extends Skill implements interactSkill
 						Vector orth = v.getCrossProduct(v);
 					
 						Location eyelocation = p.getEyeLocation();
-						BlockIterator blocksToAddEye = new BlockIterator(eyelocation, 0, 10); //10 in here represents 10 blocks
+						BlockIterator blocksToAddEye = new BlockIterator(eyelocation, 0, 10 + skillLevel.get(p)); //range ranges from 10 to 15 based on level
 						Location blockToAdd = eyelocation;
 						while(blocksToAddEye.hasNext()&&blockToAdd.getBlock().isPassable()) 
 						{
@@ -551,6 +548,7 @@ if(isPreviewingWall.get(p))
 
 
 					}
+					event.setCancelled(true); // should stop player from killing blocks or hitting people when activating the skill
 					p.sendMessage("Skill Activated");
 					createWall(p);
 					isPreviewingWall.put(p, false);
@@ -585,12 +583,8 @@ if(isPreviewingWall.get(p))
 	void makeColumn(Player p, Location highlightLoc,Location lastGood)
 	{
 		p.sendMessage("attempting column create");
-		long minimumTime = (3 + skillLevel.get(p)) * 1000; //minimum ice prison block time in ms
-
-		long random = (long) (Math.random() * 500); //added random time to each block
 
 
-		long expireTime = System.currentTimeMillis() + minimumTime + random;
 
 		//wallData.put(blockLoc, expireTime);
 
@@ -600,8 +594,15 @@ if(isPreviewingWall.get(p))
 		{
 			if (iterateLoc.getBlock().isEmpty())
 			{
+				long minimumTime = (3 + skillLevel.get(p)) * 1300; //minimum ice prison block time in ms
+
+				long random = (long) (Math.random() * 500); //added random time to each block
+
+
+				long expireTime = System.currentTimeMillis() + minimumTime + random;
+
 				iterateLoc.getBlock().setType(Material.NETHERITE_BLOCK);
-				wallData.put(iterateLoc,expireTime);
+				wallData.put(iterateLoc.getBlock().getLocation(),expireTime);
 				iterateLoc.setY(iterateLoc.getY()+1);
 			}
 			else return;
@@ -635,12 +636,10 @@ if(isPreviewingWall.get(p))
 
 
 
-	//erases wall - taken from barret erase prison in iceprison.java
+	//erases wall - taken from barret decay prison in ice prison.java
 	@EventHandler
 	private void decayWall(TickUpdateEvent e)
 	{
-		if (e.getTicks() == 1)
-		{
 			for (Location l : wallData.keySet())
 			{
 				if (wallData.get(l) <= System.currentTimeMillis())
@@ -651,7 +650,6 @@ if(isPreviewingWall.get(p))
 					}
 				}
 			}
-		}
 	}
 
 
