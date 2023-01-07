@@ -572,10 +572,10 @@ if(isPreviewingWall.get(p))
 		Location lastGoodOuterPos = checkColumn(p,storedOuterPosLocation.get(p).clone());
 		Location lastGoodOuterNeg = checkColumn(p,storedOuterNegLocation.get(p).clone());
 		makeColumn(p,storedCenterLocation.get(p),lastGoodCenter);
-		makeColumn(p,storedInnerPosLocation.get(p),lastGoodCenter);
-		makeColumn(p,storedInnerNegLocation.get(p),lastGoodCenter);
-		makeColumn(p,storedOuterPosLocation.get(p),lastGoodCenter);
-		makeColumn(p,storedOuterNegLocation.get(p),lastGoodCenter);
+		makeColumn(p,storedInnerPosLocation.get(p),lastGoodInnerPos);
+		makeColumn(p,storedInnerNegLocation.get(p),lastGoodInnerNeg);
+		makeColumn(p,storedOuterPosLocation.get(p),lastGoodOuterPos);
+		makeColumn(p,storedOuterNegLocation.get(p),lastGoodOuterNeg);
 
 
 
@@ -595,12 +595,17 @@ if(isPreviewingWall.get(p))
 		//wallData.put(blockLoc, expireTime);
 
 		Location iterateLoc = highlightLoc;
-		iterateLoc.add(0,1,0);
+		iterateLoc.add(0,2,0);
 		while(iterateLoc.getY() <= lastGood.getY())
 		{
-			iterateLoc.getBlock().setType(Material.NETHERITE_BLOCK);
-			wallData.put(iterateLoc,expireTime);
-			iterateLoc.setY(iterateLoc.getY()+1);
+			if (iterateLoc.getBlock().isEmpty())
+			{
+				iterateLoc.getBlock().setType(Material.NETHERITE_BLOCK);
+				wallData.put(iterateLoc,expireTime);
+				iterateLoc.setY(iterateLoc.getY()+1);
+			}
+			else return;
+
 		}
 
 
@@ -617,7 +622,7 @@ if(isPreviewingWall.get(p))
 
 
 
-		while (!(checkLoc.getBlock().isLiquid()||!checkLoc.getBlock().isPassable())&&checkCount<=3)
+		while (checkLoc.getBlock().isEmpty()&&checkCount<=3)
 		{
 			lastgood = checkLoc;
 			//checkLoc.getBlock().setType(Material.GLASS); //useful debug to see where it checks
