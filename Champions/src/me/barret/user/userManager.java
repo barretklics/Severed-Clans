@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import me.barret.kits.Kit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -25,7 +26,7 @@ public class userManager implements Listener
 		Player p = event.getPlayer();
 		
 		user u = new user(p.getUniqueId());
-				
+
 		users.add(u);
 		u.initializeBuilds();
 	}

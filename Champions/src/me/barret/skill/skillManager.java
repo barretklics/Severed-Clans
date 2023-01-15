@@ -7,6 +7,7 @@ import java.util.List;
 import me.barret.Champions;
 import me.barret.kits.Kit;
 import me.barret.skill.Assassin.Flash;
+import me.barret.skill.Assassin.Omniscience;
 import me.barret.skill.Assassin.Quantize;
 import me.barret.skill.Mage.DivineRay;
 import me.barret.skill.Mechanist.Orthogonal;
@@ -65,6 +66,7 @@ public class skillManager {
 	        
 	        //Assassin
 	        	//Sword
+					skills.put("Omniscience", new Omniscience(i));
 	        		
 	        		
 	        	//Axe

@@ -32,34 +32,34 @@ import me.barret.user.userManager;
 //Author: ethvor - second skill started: 1-1-22 finished:1-1-22
 public class Orthogonal extends Skill implements interactSkill
 { //inheritance
-	
-	
+
+
 	private static Kit skillKit = kitManager.getKitFromString("Mechanist"); 		//sets class for skill to assassin
-	
+
 	private static SkillType skillType = SkillType.AXE; 						//sets skill type to axe skill
-	
+
 	static String skillName = "Orthogonal";
-	
+
 	static String[] description = {"Summon a wall of blocks ","at distance to stop your enemies!"};
-	
+
 	static int MaxLevel = 5;
-	
+
 	private static HashMap<Player, Location> lastIteratedPassableLocation = new HashMap<Player, Location>(); //used for iterated path tracing to prevent block phasing
-	
+
 	private static HashMap<Player, Boolean> isPreviewingWall = new HashMap<Player, Boolean>();
-	
+
 	private static HashMap<Player, Integer> skillLevel = new HashMap<Player,Integer>();
-	
+
 	private static HashMap<Player, Location> storedGlowLocation = new HashMap<Player, Location>();
-	
+
 	private static HashMap<Player,String> uuidStorage = new HashMap<Player, String>();
-	
+
 	private static HashMap<Player,Yaw> lastYaw = new HashMap<Player,Yaw>();
-	
+
 	private static HashMap<Player,Boolean> isPreviewFacingOrthogonal = new HashMap<Player,Boolean>(); //toggled by shift
-	
+
 	private static HashMap<Player, Boolean> wasLastSummonedPreviewOrthogonal = new HashMap<Player,Boolean>(); //is good for detecting change and not summoning more cubes than necessary
-	
+
 	private static HashMap<Player, Long> timeAtLastActivation = new HashMap<Player, Long>();
 
 
@@ -74,9 +74,9 @@ public class Orthogonal extends Skill implements interactSkill
 	public Orthogonal(Champions i)
 	{
 			super(i, skillKit, skillName, skillType, description, MaxLevel);
-			
+
 	}
-	
+
 	public enum Yaw {	//code for Yaw method taken from comment by Adrian Sohn - https://stackoverflow.com/questions/35831619/get-the-direction-a-player-is-looking
 	    NORTH, SOUTH, EAST, WEST;
 		public static Yaw getYaw(Player p) {
@@ -96,7 +96,7 @@ public class Orthogonal extends Skill implements interactSkill
 		    return NORTH;
 		}
 	}
-		
+
 	public void activate(Player p, user u, int lvl)  //activate occurs on right click - lvl is ability level selected in ench table
 	{
 		if (isPreviewingWall.get(p)==false)
@@ -108,56 +108,56 @@ public class Orthogonal extends Skill implements interactSkill
 
 		skillLevel.put(p, lvl);
 		timeAtLastActivation.put(p, System.currentTimeMillis());
-		
+
 
 		}
 	}
 	}
-	
-	
-	
-	
+
+
+
+
 	//summon magma_cube ~ ~ ~ {Silent:1b,Invulnerable:1b,Glowing:1b,NoAI:1b,Size:1,CustomName:"{\"text\":\"Marker\"}",ActiveEffects:[{Id:14b,Amplifier:1b,Duration:30000,ShowParticles:0b}]}
-	
 
 
-		
-	
+
+
+
 	@EventHandler
 	private void glowingPreview(TickUpdateEvent e)
 	{
-		
+
 		for(Player p:isPreviewingWall.keySet())
 		{
-	
+
 			if (isPreviewingWall.get(p) == true)
 			{
 						Location l = p.getLocation().clone();
 						//Location initialLoc = p.getLocation();
 						Vector v = l.getDirection().clone();
 						Vector orth = v.getCrossProduct(v);
-					
+
 						Location eyelocation = p.getEyeLocation();
 						BlockIterator blocksToAddEye = new BlockIterator(eyelocation, 0, 10 + skillLevel.get(p)); //range ranges from 10 to 15 based on level
 						Location blockToAdd = eyelocation;
-						while(blocksToAddEye.hasNext()&&blockToAdd.getBlock().isPassable()) 
+						while(blocksToAddEye.hasNext()&&blockToAdd.getBlock().isPassable())
 						{
 							blockToAdd = blocksToAddEye.next().getLocation();
-			              
+
 							if (blockToAdd.getBlock().isPassable() && blockToAdd.add(0,1,0).getBlock().isPassable()) //checks if foot block and eye block in path are both passable. if so, adds to last possible loc HashMap
 							{
-	
+
 								lastIteratedPassableLocation.put(p, blockToAdd.add(0,-1,0));//
 							}
 						}
 
 
-						
+
 						Location tempHighlightLocation = lastIteratedPassableLocation.get(p);
 
-						
+
 						tempHighlightLocation.setDirection(orth); //make conditional for pressing shift to change direction of wall
-						
+
 						tempHighlightLocation.add(0.5,1,0.5);		//may need tweaking when i summon entities
 						Location highlightLocation = tempHighlightLocation;
 
@@ -166,20 +166,20 @@ public class Orthogonal extends Skill implements interactSkill
 							tempHighlightLocation.add(0,-1,0);
 						}
 							highlightLocation = tempHighlightLocation;
-						
-						
+
+
 							if(!highlightLocation.getBlock().isPassable()); //if its not passable (redundant check i think)
 							{
-								
-								
+
+
 								//highlightLocation.add(0,1,0); //puts preview 1 block above ground level - may do this if we can figure out how to summon entities already possessing nbt - right now it collides and pushes player
-								
+
 								highlightLocation.add(0,-0.1,0);
-								
+
 								///summon minecraft:magma_cube ~ ~ ~ {NoAI:1,ActiveEffects:[{Id:24,Amplifier:1,Duration:1000000},{Id:14,Amplifier:1,Duration:100000}],NoGravity:1,Silent:1b,Size:1}
 								//MagmaCube magmaCube = (MagmaCube) p.getWorld().spawnEntity(highlightLocation, EntityType.MAGMA_CUBE);
 								//store raycast block in hash - if current raycast block != stored ray in hash set = also in this if is where I kill and summon one new mob for center
-								
+
 								//this nasty conditional essentially only does nothing if:
 								//the player's raycasted target block doenst change (targeted = last)
 								//AND the player's shift toggle for whether the wall is orthogonal or parallel to their faced cardinal direction has not changed (current = last)
@@ -191,16 +191,16 @@ public class Orthogonal extends Skill implements interactSkill
 								(wasLastSummonedPreviewOrthogonal.get(p)==isPreviewFacingOrthogonal.get(p))&&
 								((highlightLocation.getBlock().getX() == storedGlowLocation.get(p).getBlock().getX())&&
 								(highlightLocation.getBlock().getY() == storedGlowLocation.get(p).getBlock().getY())&&
-								(highlightLocation.getBlock().getZ() == storedGlowLocation.get(p).getBlock().getZ()))) 
+								(highlightLocation.getBlock().getZ() == storedGlowLocation.get(p).getBlock().getZ())))
 								{
 									//do nothing
 								}
 								else //else update
 								{
-									
+
 									storedGlowLocation.put(p, highlightLocation);
 									wasLastSummonedPreviewOrthogonal.put(p,isPreviewFacingOrthogonal.get(p));
-									
+
 									for(org.bukkit.entity.Entity ent : p.getWorld().getEntities()) {
 										  if(ent instanceof MagmaCube)
 											  if (ent.getCustomName().equalsIgnoreCase(uuidStorage.get(p)))
@@ -208,16 +208,16 @@ public class Orthogonal extends Skill implements interactSkill
 												ent.teleport(ent.getLocation().add(0,-500,0));
 												ent.remove();
 											  }
-										      
+
 										}
-									
+
 									//summon cube here
-									
+
 
 									//center
-								
+
 									MagmaCube magmaCube = (MagmaCube) p.getWorld().spawnEntity(highlightLocation, EntityType.MAGMA_CUBE,false);
-									
+
 									magmaCube.setSize(2);
 									magmaCube.setInvisible(true);
 									magmaCube.setInvulnerable(true); //only causes to not wall suffocate does not cancel kill by player or entity
@@ -229,25 +229,25 @@ public class Orthogonal extends Skill implements interactSkill
 									magmaCube.setSilent(true);
 
 									//end center
-									
-									
+
+
 									//need conditional here based on changing of shift orth toggle and last yaw get.
-									
+
 									//start flank cubes preview
-									
+
 									//p.sendMessage("right above flank conditionals");
 									//p.sendMessage(""+Yaw.getYaw(p));
 									//p.sendMessage(""+isWallFacingOrthogonal.get(p));
 
-									
+
 									//north: negative z --- south: positive z --- east: positive x --- west: negative x
-									
+
 									if ((Yaw.getYaw(p)==Yaw.WEST||Yaw.getYaw(p)==Yaw.EAST)&&isPreviewFacingOrthogonal.get(p)==true) //summons north-south wall preview
 									{
 									//	p.sendMessage("inside  1");
-										
+
 										lastYaw.put(p, Yaw.getYaw(p));
-										
+
 										MagmaCube innerPos = (MagmaCube) p.getWorld().spawnEntity(highlightLocation.clone().add(0,0,1), EntityType.MAGMA_CUBE,false);//south inner
 										innerPos.setInvisible(true);
 										innerPos.setInvulnerable(true); //only causes to not wall suffocate does not cancel kill by player or entity
@@ -258,7 +258,7 @@ public class Orthogonal extends Skill implements interactSkill
 										innerPos.setCustomName(p.getUniqueId().toString());
 										innerPos.setCustomNameVisible(false);
 										innerPos.setSilent(true);
-										
+
 										MagmaCube innerNeg = (MagmaCube) p.getWorld().spawnEntity(highlightLocation.clone().subtract(0,0,1), EntityType.MAGMA_CUBE,false);//north inner
 										innerNeg.setInvisible(true);
 										innerNeg.setInvulnerable(true); //only causes to not wall suffocate does not cancel kill by player or entity
@@ -269,7 +269,7 @@ public class Orthogonal extends Skill implements interactSkill
 										innerNeg.setCustomName(p.getUniqueId().toString());
 										innerNeg.setCustomNameVisible(false);
 										innerNeg.setSilent(true);
-										
+
 										MagmaCube outerPos = (MagmaCube) p.getWorld().spawnEntity(highlightLocation.clone().add(0,0,2), EntityType.MAGMA_CUBE,false);//south outer
 										outerPos.setInvisible(true);
 										outerPos.setInvulnerable(true); //only causes to not wall suffocate does not cancel kill by player or entity
@@ -280,7 +280,7 @@ public class Orthogonal extends Skill implements interactSkill
 										outerPos.setCustomName(p.getUniqueId().toString());
 										outerPos.setCustomNameVisible(false);
 										outerPos.setSilent(true);
-										
+
 										MagmaCube outerNeg = (MagmaCube) p.getWorld().spawnEntity(highlightLocation.clone().subtract(0,0,2), EntityType.MAGMA_CUBE,false);//north outer
 										outerNeg.setInvisible(true);
 										outerNeg.setInvulnerable(true); //only causes to not wall suffocate does not cancel kill by player or entity
@@ -297,15 +297,15 @@ public class Orthogonal extends Skill implements interactSkill
 										storedInnerNegLocation.put(p,innerNeg.getLocation());
 										storedOuterPosLocation.put(p,outerPos.getLocation());
 										storedOuterNegLocation.put(p,outerNeg.getLocation());
-												
+
 									}
-									
+
 									if ((Yaw.getYaw(p)==Yaw.WEST||Yaw.getYaw(p)==Yaw.EAST)&&isPreviewFacingOrthogonal.get(p)==false) //summons east-west wall preview
 									{
 										//p.sendMessage("inside  2");
-										
+
 										lastYaw.put(p, Yaw.getYaw(p));
-										
+
 										MagmaCube innerPos = (MagmaCube) p.getWorld().spawnEntity(highlightLocation.clone().add(1,0,0), EntityType.MAGMA_CUBE,false);//west inner
 										innerPos.setInvisible(true);
 										innerPos.setInvulnerable(true); //only causes to not wall suffocate does not cancel kill by player or entity
@@ -316,7 +316,7 @@ public class Orthogonal extends Skill implements interactSkill
 										innerPos.setCustomName(p.getUniqueId().toString());
 										innerPos.setCustomNameVisible(false);
 										innerPos.setSilent(true);
-										
+
 										MagmaCube innerNeg = (MagmaCube) p.getWorld().spawnEntity(highlightLocation.clone().subtract(1,0,0), EntityType.MAGMA_CUBE,false);//east inner
 										innerNeg.setInvisible(true);
 										innerNeg.setInvulnerable(true); //only causes to not wall suffocate does not cancel kill by player or entity
@@ -327,7 +327,7 @@ public class Orthogonal extends Skill implements interactSkill
 										innerNeg.setCustomName(p.getUniqueId().toString());
 										innerNeg.setCustomNameVisible(false);
 										innerNeg.setSilent(true);
-										
+
 										MagmaCube outerPos = (MagmaCube) p.getWorld().spawnEntity(highlightLocation.clone().add(2,0,0), EntityType.MAGMA_CUBE,false);//west outer
 										outerPos.setInvisible(true);
 										outerPos.setInvulnerable(true); //only causes to not wall suffocate does not cancel kill by player or entity
@@ -338,7 +338,7 @@ public class Orthogonal extends Skill implements interactSkill
 										outerPos.setCustomName(p.getUniqueId().toString());
 										outerPos.setCustomNameVisible(false);
 										outerPos.setSilent(true);
-										
+
 										MagmaCube outerNeg = (MagmaCube) p.getWorld().spawnEntity(highlightLocation.clone().subtract(2,0,0), EntityType.MAGMA_CUBE,false);//east outer
 										outerNeg.setInvisible(true);
 										outerNeg.setInvulnerable(true); //only causes to not wall suffocate does not cancel kill by player or entity
@@ -356,13 +356,13 @@ public class Orthogonal extends Skill implements interactSkill
 										storedOuterPosLocation.put(p,outerPos.getLocation());
 										storedOuterNegLocation.put(p,outerNeg.getLocation());
 									}
-									
+
 									if ((Yaw.getYaw(p)==Yaw.NORTH||Yaw.getYaw(p)==Yaw.SOUTH)&&isPreviewFacingOrthogonal.get(p)==true) //summons east-west wall preview
 									{
 										//p.sendMessage("inside  3");
-										
+
 										lastYaw.put(p, Yaw.getYaw(p));
-										
+
 										MagmaCube innerPos = (MagmaCube) p.getWorld().spawnEntity(highlightLocation.clone().add(1,0,0), EntityType.MAGMA_CUBE,false);//west inner
 										innerPos.setInvisible(true);
 										innerPos.setInvulnerable(true); //only causes to not wall suffocate does not cancel kill by player or entity
@@ -373,7 +373,7 @@ public class Orthogonal extends Skill implements interactSkill
 										innerPos.setCustomName(p.getUniqueId().toString());
 										innerPos.setCustomNameVisible(false);
 										innerPos.setSilent(true);
-										
+
 										MagmaCube innerNeg = (MagmaCube) p.getWorld().spawnEntity(highlightLocation.clone().subtract(1,0,0), EntityType.MAGMA_CUBE,false);//east inner
 										innerNeg.setInvisible(true);
 										innerNeg.setInvulnerable(true); //only causes to not wall suffocate does not cancel kill by player or entity
@@ -384,7 +384,7 @@ public class Orthogonal extends Skill implements interactSkill
 										innerNeg.setCustomName(p.getUniqueId().toString());
 										innerNeg.setCustomNameVisible(false);
 										innerNeg.setSilent(true);
-										
+
 										MagmaCube outerPos = (MagmaCube) p.getWorld().spawnEntity(highlightLocation.clone().add(2,0,0), EntityType.MAGMA_CUBE,false);//west outer
 										outerPos.setInvisible(true);
 										outerPos.setInvulnerable(true); //only causes to not wall suffocate does not cancel kill by player or entity
@@ -395,7 +395,7 @@ public class Orthogonal extends Skill implements interactSkill
 										outerPos.setCustomName(p.getUniqueId().toString());
 										outerPos.setCustomNameVisible(false);
 										outerPos.setSilent(true);
-										
+
 										MagmaCube outerNeg = (MagmaCube) p.getWorld().spawnEntity(highlightLocation.clone().subtract(2,0,0), EntityType.MAGMA_CUBE,false);//east outer
 										outerNeg.setInvisible(true);
 										outerNeg.setInvulnerable(true); //only causes to not wall suffocate does not cancel kill by player or entity
@@ -413,13 +413,13 @@ public class Orthogonal extends Skill implements interactSkill
 										storedOuterPosLocation.put(p,outerPos.getLocation());
 										storedOuterNegLocation.put(p,outerNeg.getLocation());
 									}
-									
+
 									if ((Yaw.getYaw(p)==Yaw.NORTH||Yaw.getYaw(p)==Yaw.SOUTH)&&isPreviewFacingOrthogonal.get(p)==false) //summons north-south wall preview
 									{
 										//p.sendMessage("inside  4");
-										
+
 										lastYaw.put(p, Yaw.getYaw(p));
-										
+
 										MagmaCube innerPos = (MagmaCube) p.getWorld().spawnEntity(highlightLocation.clone().add(0,0,1), EntityType.MAGMA_CUBE,false);//south inner
 										innerPos.setInvisible(true);
 										innerPos.setInvulnerable(true); //only causes to not wall suffocate does not cancel kill by player or entity
@@ -430,7 +430,7 @@ public class Orthogonal extends Skill implements interactSkill
 										innerPos.setCustomName(p.getUniqueId().toString());
 										innerPos.setCustomNameVisible(false);
 										innerPos.setSilent(true);
-										
+
 										MagmaCube innerNeg = (MagmaCube) p.getWorld().spawnEntity(highlightLocation.clone().subtract(0,0,1), EntityType.MAGMA_CUBE,false);//north inner
 										innerNeg.setInvisible(true);
 										innerNeg.setInvulnerable(true); //only causes to not wall suffocate does not cancel kill by player or entity
@@ -441,7 +441,7 @@ public class Orthogonal extends Skill implements interactSkill
 										innerNeg.setCustomName(p.getUniqueId().toString());
 										innerNeg.setCustomNameVisible(false);
 										innerNeg.setSilent(true);
-										
+
 										MagmaCube outerPos = (MagmaCube) p.getWorld().spawnEntity(highlightLocation.clone().add(0,0,2), EntityType.MAGMA_CUBE,false);//south outer
 										outerPos.setInvisible(true);
 										outerPos.setInvulnerable(true); //only causes to not wall suffocate does not cancel kill by player or entity
@@ -452,7 +452,7 @@ public class Orthogonal extends Skill implements interactSkill
 										outerPos.setCustomName(p.getUniqueId().toString());
 										outerPos.setCustomNameVisible(false);
 										outerPos.setSilent(true);
-										
+
 										MagmaCube outerNeg = (MagmaCube) p.getWorld().spawnEntity(highlightLocation.clone().subtract(0,0,2), EntityType.MAGMA_CUBE,false);//north outer
 										outerNeg.setInvisible(true);
 										outerNeg.setInvulnerable(true); //only causes to not wall suffocate does not cancel kill by player or entity
@@ -470,23 +470,23 @@ public class Orthogonal extends Skill implements interactSkill
 										storedOuterPosLocation.put(p,outerPos.getLocation());
 										storedOuterNegLocation.put(p,outerNeg.getLocation());
 									}
-									
+
 									//end flank cube preview
 
 
 
-								
-									
-								
-								} 
+
+
+
+								}
 
 						}
 		}
 	}
-			
+
 }
-				
-				
+
+
 @EventHandler
 private void cubeInvulnerability(EntityDamageByEntityEvent event)
 {
@@ -501,12 +501,12 @@ private void cubeInvulnerability(EntityDamageByEntityEvent event)
 }
 
 @EventHandler //toggles orthogonal and parallel viewing modes
-public void SneakOrthSwitch(PlayerToggleSneakEvent event) 
+public void SneakOrthSwitch(PlayerToggleSneakEvent event)
 {
 Player p = event.getPlayer();
 if(isPreviewingWall.get(p))
 {
-	if(p.isSneaking()) 
+	if(p.isSneaking())
 	{
 		if (isPreviewFacingOrthogonal.get(p) == false)
 		{
@@ -518,7 +518,7 @@ if(isPreviewingWall.get(p))
 			p.sendMessage("swapped to parallel wall preview");
 		isPreviewFacingOrthogonal.put(p,false);
 		}
-		
+
 	}
 }
 
@@ -530,32 +530,30 @@ if(isPreviewingWall.get(p))
 	{
 
 		Player p = event.getPlayer();
-
-		if(isPreviewingWall.get(p))
+		if (!isPreviewingWall.isEmpty());
 		{
-			if (System.currentTimeMillis() >= timeAtLastActivation.get(p) + 20)
-			{
-				if((event.getAction() == Action.LEFT_CLICK_AIR) || (event.getAction() == Action.LEFT_CLICK_BLOCK))
-				{
+			if (isPreviewingWall.get(p)) {
+				if (System.currentTimeMillis() >= timeAtLastActivation.get(p) + 20) {
+					if ((event.getAction() == Action.LEFT_CLICK_AIR) || (event.getAction() == Action.LEFT_CLICK_BLOCK)) {
 
-					for(org.bukkit.entity.Entity ent : p.getWorld().getEntities()) {
-						if(ent instanceof MagmaCube)
-							if (ent.getCustomName().equalsIgnoreCase(uuidStorage.get(p)))
-							{
-								ent.teleport(ent.getLocation().add(0,-500,0));
-								ent.remove();
-							}
+						for (org.bukkit.entity.Entity ent : p.getWorld().getEntities()) {
+							if (ent instanceof MagmaCube)
+								if (ent.getCustomName().equalsIgnoreCase(uuidStorage.get(p))) {
+									ent.teleport(ent.getLocation().add(0, -500, 0));
+									ent.remove();
+								}
+
+
+						}
+						event.setCancelled(true); // should stop player from killing blocks or hitting people when activating the skill
+						p.sendMessage("Skill Activated");
+						createWall(p);
+						isPreviewingWall.put(p, false);
+						timeAtLastActivation.put(p, System.currentTimeMillis());
+						//
 
 
 					}
-					event.setCancelled(true); // should stop player from killing blocks or hitting people when activating the skill
-					p.sendMessage("Skill Activated");
-					createWall(p);
-					isPreviewingWall.put(p, false);
-					timeAtLastActivation.put(p, System.currentTimeMillis());
-					//
-
-
 				}
 			}
 		}
@@ -569,10 +567,16 @@ if(isPreviewingWall.get(p))
 		Location lastGoodInnerNeg = checkColumn(p,storedInnerNegLocation.get(p).clone());
 		Location lastGoodOuterPos = checkColumn(p,storedOuterPosLocation.get(p).clone());
 		Location lastGoodOuterNeg = checkColumn(p,storedOuterNegLocation.get(p).clone());
+
+
 		makeColumn(p,storedCenterLocation.get(p),lastGoodCenter);
+
 		makeColumn(p,storedInnerPosLocation.get(p),lastGoodInnerPos);
+
 		makeColumn(p,storedInnerNegLocation.get(p),lastGoodInnerNeg);
+
 		makeColumn(p,storedOuterPosLocation.get(p),lastGoodOuterPos);
+
 		makeColumn(p,storedOuterNegLocation.get(p),lastGoodOuterNeg);
 
 
@@ -653,56 +657,57 @@ if(isPreviewingWall.get(p))
 	}
 
 
-	
+
 	@EventHandler
 	private void cancelPreview(PlayerInteractEvent event) //if player right clicks while previewing, sets isPreviewingWall to false (cancels preview)
 	{
-		
-		Player p = event.getPlayer();
-			
-			if(isPreviewingWall.get(p))
-			{
-				if (System.currentTimeMillis() >= timeAtLastActivation.get(p) + 20)
-				{
-					if((event.getAction() == Action.RIGHT_CLICK_AIR) || (event.getAction() == Action.RIGHT_CLICK_BLOCK))
-					{
 
-						for(org.bukkit.entity.Entity ent : p.getWorld().getEntities()) {
-							  if(ent instanceof MagmaCube)
-								  if (ent.getCustomName().equalsIgnoreCase(uuidStorage.get(p)))
-								  {
-									ent.teleport(ent.getLocation().add(0,-500,0));
+		Player p = event.getPlayer();
+		if (isPreviewingWall.get(p) != null) {
+			if (isPreviewingWall.get(p)) {
+				if (System.currentTimeMillis() >= timeAtLastActivation.get(p) + 20) {
+					if ((event.getAction() == Action.RIGHT_CLICK_AIR) || (event.getAction() == Action.RIGHT_CLICK_BLOCK)) {
+
+						for (org.bukkit.entity.Entity ent : p.getWorld().getEntities()) {
+							if (ent instanceof MagmaCube)
+								if (ent.getCustomName().equalsIgnoreCase(uuidStorage.get(p))) {
+									ent.teleport(ent.getLocation().add(0, -500, 0));
 									ent.remove();
-								  }
-							      
-							}
-					isPreviewingWall.put(p, false);
-					timeAtLastActivation.put(p, System.currentTimeMillis());
-					p.sendMessage("preview cancelled");
+								}
+
+						}
+						isPreviewingWall.put(p, false);
+						timeAtLastActivation.put(p, System.currentTimeMillis());
+						p.sendMessage("preview cancelled");
+					}
 				}
 			}
-			}
 		}
-	
+	}
 
-	
+
+
+
 	//need a few s: when player changes build ACTIVATES THIS THEORETICAL EVENT. when player logs into this build ACTIVATES THIS THEORETICAL EVENT when player changes from knight to assassin and this build is selected ACTIVATES THIS THEORETICAL EVENT @barret
 	//DOESNT WORK. ONLY DETECTS WHEN GOING FROM ASSASSIN TO NAKED and V.V.
-			@EventHandler // WILL BE CALLED every time kit is changed. 
+			@EventHandler // WILL BE CALLED every time kit is changed.
 			//this is going to listen to spigot api's event handler which barret used to make a custom event buildchange
 			private void onBuildChange(kitChangeEvent e) //needs new event
-			{ 
+			{
 				Player p = e.getPlayer(); //spigot
 				user u = userManager.getUser(p.getUniqueId()); //barret user type calls spigot api to get players uuid
-				if(u.getCurrentSkills().getAxe().getName() == skillName)// checks if player build contains axe skill called skillname ("Orthogonal")
-				{ 
+
+					if(u.getCurrentSkills().getAxe().getName() == skillName)// checks if player build contains axe skill called skillname ("Orthogonal")
+					{
 					isPreviewingWall.put(p, false);
 					storedGlowLocation.put(p,p.getLocation());
 					uuidStorage.put(p, p.getUniqueId().toString());
 					isPreviewFacingOrthogonal.put(p,true);
 					timeAtLastActivation.put(p, System.currentTimeMillis());
-				}		
-			}
+					}
 
+
+			}
 }
+
 

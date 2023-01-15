@@ -140,7 +140,7 @@ public class Flash extends Skill implements interactSkill{ //inheritance
                   
 					if (blockToAdd.getBlock().isPassable() && blockToAdd.add(0,1,0).getBlock().isPassable()) //checks if foot block and eye block in path are both passable. if so, adds to last possible loc HashMap
 					{
-						p.spawnParticle(Particle.WAX_ON,blockToAdd.add(0, 1, 0),1);
+						p.getWorld().spawnParticle(Particle.WAX_ON,blockToAdd.add(0, 1, 0),1);
 						lastIteratedPassableLocation.put(p, blockToAdd.add(0,-1,0));//
 					}
 				}
@@ -151,8 +151,8 @@ public class Flash extends Skill implements interactSkill{ //inheritance
 				if(tpLoc.getBlock().isPassable())
 				{
 					p.teleport(tpLoc);
-					p.playSound(p, Sound.ENTITY_WITHER_SHOOT,(float) 0.4,(float)2);
-					p.playSound(p, Sound.ENTITY_ENDERMITE_DEATH,(float) 0.4,(float)2 );
+					p.getWorld().playSound(tpLoc, Sound.ENTITY_WITHER_SHOOT,(float) 1.50,(float)2);
+					p.getWorld().playSound(tpLoc, Sound.ENTITY_ENDERMITE_DEATH,(float) 1.50,(float)2 );
 				}
 				
 				else p.sendMessage("Flash Block Phase Cancelled");
