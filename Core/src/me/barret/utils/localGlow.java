@@ -8,6 +8,8 @@ import com.comphenix.protocol.wrappers.WrappedDataValue;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import com.comphenix.protocol.wrappers.WrappedWatchableObject;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,19 +30,19 @@ import java.util.HashMap;
 
 public class localGlow {
 
-    private static HashMap<Player, Player> glowingPlayersForAbilityUser = new HashMap<Player, Player>();
 
     public static void addGlow(Player player, int lvl) {
 
-        //timeOfGlow.put(player, System.currentTimeMillis()); //used to remove glow from players after certain time
 
 
 
-            for (Player glowReceiver : Bukkit.getOnlinePlayers()) {
+    for (Entity glowReceiver :player.getLocation().getWorld().getNearbyEntities(player.getLocation(),15,15,15))
+    {
+        if(glowReceiver instanceof Player)
                 if (glowReceiver != player) {
-                    glowingPlayersForAbilityUser.put(player, glowReceiver);
 
-                    player.sendMessage("within addGlow debug");
+
+                  //  player.sendMessage("within addGlow debug");
 
 
                     ProtocolManager Manager = ProtocolLibrary.getProtocolManager();
@@ -84,13 +86,13 @@ public class localGlow {
 
 public static void removeLocalGlow(Player player, int lvl)
 {
-  //  if(timeOfGlow.get(player) + 2000 + lvl <= System.currentTimeMillis())
-        player.sendMessage("attempting glow remove");
+
+        //player.sendMessage("attempting glow remove");
 
     for (Player glowReceiver : Bukkit.getOnlinePlayers()) {
 
 
-            player.sendMessage("within removeGlow debug");
+
 
 
             ProtocolManager Manager = ProtocolLibrary.getProtocolManager();
