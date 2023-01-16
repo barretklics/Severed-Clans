@@ -94,30 +94,27 @@ public class Flash extends Skill implements interactSkill{ //inheritance
 	}
 		
 		@EventHandler	//adds charges every 2.5s after checks
-		private void onTickUpdate(TickUpdateEvent t) 
-		{ //every tick that server updates, calls TickUpdateEvent -> calls onTickUpdate
-			
-									
-			
-			for(Player p:timeAtLastChargeIncrement.keySet()) 
-			{
-									
+		private void onTickUpdate(TickUpdateEvent t) { //every tick that server updates, calls TickUpdateEvent -> calls onTickUpdate
+
+
+			for (Player p : timeAtLastChargeIncrement.keySet()) {
+
 				user u = userManager.getUser(p.getUniqueId());
-				if(u.getCurrentSkills().getAxe().getName() == skillName)//if skill is flash
-				{
-					
-								
-					
-					if(System.currentTimeMillis() >= timeAtLastChargeIncrement.get(p) + 2500) //if charge cooldown done (2.5s)
-					{ 
-						if(chargesOwned.get(p) < u.getCurrentSkills().getBuildSkillFromSkill(u.getCurrentSkills().getAxe()).getLevel()) 
-						{ //barret moment - if charges is not greater than current level
-							chargesOwned.put(p,chargesOwned.get(p) + 1); //charges = charges + 1 in hashmap called chargesOwned
-							timeAtLastChargeIncrement.put(p, System.currentTimeMillis());
-							p.sendMessage("Charges [+]:  " + chargesOwned.get(p));
+				if (u.getCurrentSkills() != null) {
+					if (u.getCurrentSkills().getAxe().getName() == skillName)//if skill is flash
+					{
+
+
+						if (System.currentTimeMillis() >= timeAtLastChargeIncrement.get(p) + 2500) //if charge cooldown done (2.5s)
+						{
+							if (chargesOwned.get(p) < u.getCurrentSkills().getBuildSkillFromSkill(u.getCurrentSkills().getAxe()).getLevel()) { //barret moment - if charges is not greater than current level
+								chargesOwned.put(p, chargesOwned.get(p) + 1); //charges = charges + 1 in hashmap called chargesOwned
+								timeAtLastChargeIncrement.put(p, System.currentTimeMillis());
+								p.sendMessage("Charges [+]:  " + chargesOwned.get(p));
+							}
 						}
+
 					}
-			
 				}
 			}
 		}

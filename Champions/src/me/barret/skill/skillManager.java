@@ -8,6 +8,7 @@ import me.barret.Champions;
 import me.barret.kits.Kit;
 import me.barret.skill.Assassin.Flash;
 import me.barret.skill.Assassin.Omniscience;
+import me.barret.skill.Assassin.PoisonArrow;
 import me.barret.skill.Assassin.Quantize;
 import me.barret.skill.Mage.DivineRay;
 import me.barret.skill.Mechanist.Orthogonal;
@@ -75,6 +76,8 @@ public class skillManager {
 					skills.put("Flash", new Flash(i));
 					skills.put("Quantize", new Quantize(i));
 
+				//Bow
+					skills.put("Poison Arrow", new PoisonArrow(i));
 
 			//Mechanist
 				//Sword
