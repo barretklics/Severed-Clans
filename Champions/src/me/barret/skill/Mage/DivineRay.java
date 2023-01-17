@@ -85,7 +85,7 @@ private static Kit skillKit = kitManager.getKitFromString("Mage");
 			while (blocksToAddFoot.hasNext() && blockToAdd.getBlock().isPassable()) {
 				blockToAdd = blocksToAddFoot.next().getLocation();
 
-				if (blockToAdd.getBlock().isPassable() && blockToAdd.add(0, 1, 0).getBlock().isPassable()) //checks if foot block and eye block in path are both passable. if so, adds to last possible loc HashMap
+				if (blockToAdd.getBlock().isPassable() && blockToAdd.add(0, 1, 0).getBlock().isPassable())
 				{
 					p.spawnParticle(Particle.FLAME, blockToAdd.add(0, 1, 0), 0,l.getDirection().getX() ,l.getDirection().getY(),l.getDirection().getZ(), 10);
 					//spawnParticle(Particle particle, Location location, int count, double offsetX, double offsetY, double offsetZ, double extra, T data)
