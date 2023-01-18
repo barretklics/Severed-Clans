@@ -35,6 +35,11 @@ public class user {
 		
 	}
 
+	public void resetBuilds() {
+		allBuilds = null;
+		currentBuildIndexes = null;
+		uuid = null;
+	}
 	
 	public boolean initializeBuilds() {
 		

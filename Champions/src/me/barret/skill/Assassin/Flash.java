@@ -111,7 +111,7 @@ public class Flash extends Skill implements interactSkill{ //inheritance
 		Player p = e.getPlayer();
 		
 		if (e.getNewBuild() == null) return; //null check
-		
+		if (e.getNewBuild().getAxe() == null) return; //null check
 		if(newBuild.getAxe().getName() == skillName)// checks if player build contains axe skill called skillname ("flash")
 		{ 
 			timeSinceLastFlash.put(p, System.currentTimeMillis()); //sets time since last flash to "current time"
