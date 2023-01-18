@@ -94,30 +94,27 @@ public class Flash extends Skill implements interactSkill{ //inheritance
 	}
 		
 		@EventHandler	//adds charges every 2.5s after checks
-		private void onTickUpdate(TickUpdateEvent t) 
-		{ //every tick that server updates, calls TickUpdateEvent -> calls onTickUpdate
-			
-									
-			
-			for(Player p:timeAtLastChargeIncrement.keySet()) 
-			{
-									
+		private void onTickUpdate(TickUpdateEvent t) { //every tick that server updates, calls TickUpdateEvent -> calls onTickUpdate
+
+
+			for (Player p : timeAtLastChargeIncrement.keySet()) {
+
 				user u = userManager.getUser(p.getUniqueId());
-				if(u.getCurrentSkills().getAxe().getName() == skillName)//if skill is flash
-				{
-					
-								
-					
-					if(System.currentTimeMillis() >= timeAtLastChargeIncrement.get(p) + 2500) //if charge cooldown done (2.5s)
-					{ 
-						if(chargesOwned.get(p) < u.getCurrentSkills().getBuildSkillFromSkill(u.getCurrentSkills().getAxe()).getLevel()) 
-						{ //barret moment - if charges is not greater than current level
-							chargesOwned.put(p,chargesOwned.get(p) + 1); //charges = charges + 1 in hashmap called chargesOwned
-							timeAtLastChargeIncrement.put(p, System.currentTimeMillis());
-							p.sendMessage("Charges [+]:  " + chargesOwned.get(p));
+				if (u.getCurrentSkills() != null) {
+					if (u.getCurrentSkills().getAxe().getName() == skillName)//if skill is flash
+					{
+
+
+						if (System.currentTimeMillis() >= timeAtLastChargeIncrement.get(p) + 2500) //if charge cooldown done (2.5s)
+						{
+							if (chargesOwned.get(p) < u.getCurrentSkills().getBuildSkillFromSkill(u.getCurrentSkills().getAxe()).getLevel()) { //barret moment - if charges is not greater than current level
+								chargesOwned.put(p, chargesOwned.get(p) + 1); //charges = charges + 1 in hashmap called chargesOwned
+								timeAtLastChargeIncrement.put(p, System.currentTimeMillis());
+								p.sendMessage("Charges [+]:  " + chargesOwned.get(p));
+							}
 						}
+
 					}
-			
 				}
 			}
 		}
@@ -140,7 +137,7 @@ public class Flash extends Skill implements interactSkill{ //inheritance
                   
 					if (blockToAdd.getBlock().isPassable() && blockToAdd.add(0,1,0).getBlock().isPassable()) //checks if foot block and eye block in path are both passable. if so, adds to last possible loc HashMap
 					{
-						p.spawnParticle(Particle.WAX_ON,blockToAdd.add(0, 1, 0),1);
+						p.getWorld().spawnParticle(Particle.WAX_ON,blockToAdd.add(0, 1, 0),1);
 						lastIteratedPassableLocation.put(p, blockToAdd.add(0,-1,0));//
 					}
 				}
@@ -151,8 +148,8 @@ public class Flash extends Skill implements interactSkill{ //inheritance
 				if(tpLoc.getBlock().isPassable())
 				{
 					p.teleport(tpLoc);
-					p.playSound(p, Sound.ENTITY_WITHER_SHOOT,(float) 0.4,(float)2);
-					p.playSound(p, Sound.ENTITY_ENDERMITE_DEATH,(float) 0.4,(float)2 );
+					p.getWorld().playSound(tpLoc, Sound.ENTITY_WITHER_SHOOT,(float) 1.50,(float)2);
+					p.getWorld().playSound(tpLoc, Sound.ENTITY_ENDERMITE_DEATH,(float) 1.50,(float)2 );
 				}
 				
 				else p.sendMessage("Flash Block Phase Cancelled");
