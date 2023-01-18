@@ -24,11 +24,24 @@ public class userManager implements Listener
 	public void onPlayerJoin(PlayerJoinEvent event)
 	{
 		Player p = event.getPlayer();
+		if (users.size() == 0 || users == null) {
+			user u = new user(p.getUniqueId());
+			users.add(u);
+			u.initializeBuilds();
+			
+			
+			
+		}
+		
+		for(user u: users) {
+			if (u.getUUID() == p.getUniqueId()) return; //stop executing if user is in list
+		}
+		
 		
 		user u = new user(p.getUniqueId());
-
 		users.add(u);
 		u.initializeBuilds();
+		
 	}
 
 	

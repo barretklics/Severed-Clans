@@ -35,7 +35,7 @@ public class skillListener implements Listener{
 			Player p = event.getPlayer();
 			user u = userManager.getUser(p.getUniqueId());
 	
-			Build b = u.getCurrentSkills();
+			Build b = u.getCurrentBuild();
 			
 			if (b != null)
 			{
@@ -71,7 +71,7 @@ public class skillListener implements Listener{
 			{
 				user u = userManager.getUser(p.getUniqueId());
 
-				Build b = u.getCurrentSkills();
+				Build b = u.getCurrentBuild();
 				
 				if (b == null) return;
 				if ((rightClickManager.isHoldingRightClick(p)) && (UtilItem.isSword(UtilInventory.getItemInMainHand(p))) && (b.getSword() instanceof channelSkill))

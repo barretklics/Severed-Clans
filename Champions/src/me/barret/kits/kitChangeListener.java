@@ -66,7 +66,7 @@ public class kitChangeListener implements Listener{
 			return;
 			
 		}
-		int bid = u.getActiveBuild(e.getNewKit());
+		int bid = u.getActiveBuildIndex(e.getNewKit());
 		
 		Build b = u.getBuildsForKit(e.getNewKit()).get(bid);
 				

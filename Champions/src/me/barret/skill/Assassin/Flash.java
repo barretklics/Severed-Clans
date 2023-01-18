@@ -14,6 +14,8 @@ import org.bukkit.util.BlockIterator;
 import org.bukkit.util.Vector;
 
 import me.barret.Champions;
+import me.barret.build.Build;
+import me.barret.build.BuildChangeEvent;
 import me.barret.events.TickUpdateEvent;
 import me.barret.kits.Kit;
 import me.barret.kits.kitChangeEvent;
@@ -77,6 +79,9 @@ public class Flash extends Skill implements interactSkill{ //inheritance
 		//else p.sendMessage("Cannot use flash while within unpassable blocks.");
 	}
 		
+	
+	
+	/* TODELETE old method-----------!!!!!!!!!!!!!!!!!
 	//DOESNT WORK. ONLY DETECTS WHEN GOING FROM ASSASSIN TO NAKED.
 	@EventHandler // WILL BE CALLED every time kit is changed. 
 	//this is going to listen to spigot api's event handler which barret used to make a custom event buildchange
@@ -84,7 +89,7 @@ public class Flash extends Skill implements interactSkill{ //inheritance
 	{ 
 		Player p = e.getPlayer(); //spigot
 		user u = userManager.getUser(p.getUniqueId()); //barret user type calls spigot api to get players uuid
-		if(u.getCurrentSkills().getAxe().getName() == skillName)// checks if player build contains axe skill called skillname ("flash")
+		if(u.getCurrentBuild().getAxe().getName() == skillName)// checks if player build contains axe skill called skillname ("flash")
 		{ 
 			timeSinceLastFlash.put(p, System.currentTimeMillis()); //sets time since last flash to "current time"
 			chargesOwned.put(p, 0); //sets the player's charges to 0 within a hash map called chargesOwned
@@ -92,6 +97,33 @@ public class Flash extends Skill implements interactSkill{ //inheritance
 			p.sendMessage("Charges (INITIAL): " + chargesOwned.get(p));
 		}		
 	}
+	*/
+	
+	
+	/**
+	 * @author cerav
+	 * Example of on build change to replace old
+	 * @param e
+	 */
+	@EventHandler
+	private void onBarretDoSomethingEvent(BuildChangeEvent e) {
+		Build newBuild = e.getNewBuild(); //The build that is changed into
+		Player p = e.getPlayer();
+		
+		if (e.getNewBuild() == null) return; //null check
+		
+		if(newBuild.getAxe().getName() == skillName)// checks if player build contains axe skill called skillname ("flash")
+		{ 
+			timeSinceLastFlash.put(p, System.currentTimeMillis()); //sets time since last flash to "current time"
+			chargesOwned.put(p, 0); //sets the player's charges to 0 within a hash map called chargesOwned
+			timeAtLastChargeIncrement.put(p, System.currentTimeMillis()); //logs last time player was given a flash charge
+			p.sendMessage("Charges (INITIAL): " + chargesOwned.get(p));
+		}		
+		
+		
+		
+	}
+	
 		
 		@EventHandler	//adds charges every 2.5s after checks
 		private void onTickUpdate(TickUpdateEvent t) { //every tick that server updates, calls TickUpdateEvent -> calls onTickUpdate
@@ -100,14 +132,14 @@ public class Flash extends Skill implements interactSkill{ //inheritance
 			for (Player p : timeAtLastChargeIncrement.keySet()) {
 
 				user u = userManager.getUser(p.getUniqueId());
-				if (u.getCurrentSkills() != null) {
-					if (u.getCurrentSkills().getAxe().getName() == skillName)//if skill is flash
+				if (u.getCurrentBuild() != null) {
+					if (u.getCurrentBuild().getAxe().getName() == skillName)//if skill is flash
 					{
 
 
 						if (System.currentTimeMillis() >= timeAtLastChargeIncrement.get(p) + 2500) //if charge cooldown done (2.5s)
 						{
-							if (chargesOwned.get(p) < u.getCurrentSkills().getBuildSkillFromSkill(u.getCurrentSkills().getAxe()).getLevel()) { //barret moment - if charges is not greater than current level
+							if (chargesOwned.get(p) < u.getCurrentBuild().getBuildSkillFromSkill(u.getCurrentBuild().getAxe()).getLevel()) { //barret moment - if charges is not greater than current level
 								chargesOwned.put(p, chargesOwned.get(p) + 1); //charges = charges + 1 in hashmap called chargesOwned
 								timeAtLastChargeIncrement.put(p, System.currentTimeMillis());
 								p.sendMessage("Charges [+]:  " + chargesOwned.get(p));
