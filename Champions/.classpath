@@ -6,9 +6,9 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="C:/Users/cerav/Desktop/Server/BuildTools/Spigot/Spigot-API/target/spigot-api-1.19.2-R0.1-SNAPSHOT.jar"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/Core"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/Clans"/>
 	<classpathentry kind="lib" path="C:/Users/cerav/Desktop/1.19.3 Build tootls/BungeeCord.jar"/>
+	<classpathentry kind="lib" path="C:/Users/cerav/Desktop/1.19.3 Build tootls/Spigot/Spigot-API/target/spigot-api-1.19.3-R0.1-SNAPSHOT.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

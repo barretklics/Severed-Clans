@@ -1,5 +1,6 @@
 package me.barret.kits.editor;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -11,10 +12,12 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import me.barret.build.Build;
+import me.barret.build.BuildChangeEvent;
 import me.barret.gui.Button;
 import me.barret.gui.ButtonClickEvent;
 import me.barret.gui.Gui;
 import me.barret.kits.Kit;
+import me.barret.kits.kitChangeEvent;
 import me.barret.kits.kitManager;
 import me.barret.skill.Skill;
 import me.barret.skill.Skill.SkillType;
@@ -87,7 +90,7 @@ public class kitSelector implements Listener{
 	public void onBuildOverviewInput(ButtonClickEvent e) {
 		if (e.getButton() == null) return;
 		if (!(e.getGui() instanceof buildOverviewPage)) return;
-		
+		Player p = e.getPlayer();
 		String tag = e.getButton().getName();
 		
 		Gui g = e.getGui();
@@ -135,13 +138,42 @@ public class kitSelector implements Listener{
 		
 		
 		if (op.equalsIgnoreCase("Apply")) {
-			userManager.getUser(e.getPlayer().getUniqueId()).setActiveBuild(kit, buildIndex);
+			
+			user u = userManager.getUser(e.getPlayer().getUniqueId());
+		
+			
+			Build oldBuild = u.getCurrentBuild(); //old build
 			
 			
+			userManager.getUser(e.getPlayer().getUniqueId()).setActiveBuild(kit, buildIndex); //apply new build
+			
+			Build newBuild = u.getCurrentBuild();
+
 			//ADD EVENT for build change
 			
-			
+
+
+
 			openKitEditor(e.getPlayer(), kit);
+			
+			
+			//no previous build, changes to new build
+			if (oldBuild == null) {
+				if (newBuild == null) return;
+				Bukkit.getPluginManager().callEvent(new BuildChangeEvent(p, p.getUniqueId(), oldBuild, newBuild));
+			}
+			
+			//error case
+			if (newBuild == null) return;
+			
+			
+			//Change of build
+			if (oldBuild != newBuild) {
+				Bukkit.getPluginManager().callEvent(new BuildChangeEvent(p, p.getUniqueId(), oldBuild, newBuild));
+			}
+			
+			
+			
 			return;
 		}
 		
@@ -168,6 +200,8 @@ public class kitSelector implements Listener{
 		if (e.getButton() instanceof SkillButton) {
 			SkillButton button_ins = (SkillButton) e.getButton();
 			Build b = g.getBuild();
+			Build oldBuild = b;
+			user u = userManager.getUser(e.getPlayer().getUniqueId());
 			//System.out.println("Build Index from page: " + g.getIndex())
 			Skill s = button_ins.getSkill();
 			
@@ -187,14 +221,27 @@ public class kitSelector implements Listener{
 			
 			
 			
+			
+			//Call event if skills change
+			Player p = e.getPlayer();
+			if (oldBuild.asList() != u.getCurrentBuild().asList()){
+				Bukkit.getPluginManager().callEvent(new BuildChangeEvent(p, p.getUniqueId(), oldBuild, u.getCurrentBuild()));
+				
+
+			}
+			
+			
+			
 		}
+		
+		
+		
 		
 		
 		
 		
 		return;
 	}	
-	
 	
 	
 	

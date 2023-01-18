@@ -2,9 +2,13 @@ package me.barret.kits;
 
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
+
+import me.barret.build.BuildChangeEvent;
+import me.barret.user.userManager;
 
 public class kitChangeEvent extends Event
 {
@@ -29,6 +33,9 @@ public class kitChangeEvent extends Event
 		this.u = u;
 		this.newKit = newKit;
 		this.oldKit = oldKit;
+		
+		me.barret.user.user user = userManager.getUser(p.getUniqueId());
+		//Bukkit.getPluginManager().callEvent(new BuildChangeEvent(p, p.getUniqueId(), user.getCurrentBuildForKit(oldKit), user.getCurrentBuild()));
 		
 	}
 

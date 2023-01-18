@@ -66,11 +66,11 @@ public class buildOverviewPage extends Gui{
 		ItemStack b3 = new ItemStack(Material.GREEN_DYE);
 		ItemStack b4 = new ItemStack(Material.BLUE_DYE);
 		
-		if (userManager.getUser(p.getUniqueId()).getActiveBuild(k) == 0) def = UtilItem.addGlow(def);
-		if (userManager.getUser(p.getUniqueId()).getActiveBuild(k) == 1) b1 = UtilItem.addGlow(b1);
-		if (userManager.getUser(p.getUniqueId()).getActiveBuild(k) == 2) b2 =UtilItem.addGlow(b2);
-		if (userManager.getUser(p.getUniqueId()).getActiveBuild(k) == 3) b3 =UtilItem.addGlow(b3);
-		if (userManager.getUser(p.getUniqueId()).getActiveBuild(k) == 4) b4 =UtilItem.addGlow(b4);
+		if (userManager.getUser(p.getUniqueId()).getActiveBuildIndex(k) == 0) def = UtilItem.addGlow(def);
+		if (userManager.getUser(p.getUniqueId()).getActiveBuildIndex(k) == 1) b1 = UtilItem.addGlow(b1);
+		if (userManager.getUser(p.getUniqueId()).getActiveBuildIndex(k) == 2) b2 =UtilItem.addGlow(b2);
+		if (userManager.getUser(p.getUniqueId()).getActiveBuildIndex(k) == 3) b3 =UtilItem.addGlow(b3);
+		if (userManager.getUser(p.getUniqueId()).getActiveBuildIndex(k) == 4) b4 =UtilItem.addGlow(b4);
 		
 		this.addButton(new Button(9, def, ChatColor.BOLD + "" + ChatColor.GREEN + "Default Build", BuildList.get(0).asList()));
 		

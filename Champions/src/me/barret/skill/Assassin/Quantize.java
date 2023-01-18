@@ -80,7 +80,7 @@ import me.barret.events.TickUpdateEvent;
 				{ 
 					Player p = e.getPlayer(); //spigot
 					user u = userManager.getUser(p.getUniqueId()); //barret user type calls spigot api to get players uuid
-					if(u.getCurrentSkills().getAxe().getName() == skillName)// checks if player build contains axe skill called skillname ("flash")
+					if(u.getCurrentBuild().getAxe().getName() == skillName)// checks if player build contains axe skill called skillname ("flash")
 					{ 
 						timeSinceLastQuantize.put(p, System.currentTimeMillis()); //sets time since last flash to "current time"
 						isEntangled.put(p, false);
@@ -186,7 +186,7 @@ import me.barret.events.TickUpdateEvent;
 					if (isEntangled.get(p)) //checks to see if player is currently entangled (has not yet recalled)
 					{
 						user u = userManager.getUser(p.getUniqueId());
-						if(u.getCurrentSkills().getAxe().getName() == skillName)
+						if(u.getCurrentBuild().getAxe().getName() == skillName)
 						{//if skill is Quantize
 							if(System.currentTimeMillis()> timeOfEntanglement.get(p) + 2000 + skillLevel.get(p)*1000 && isQuantizeOnCooldown.get(p) == false)
 							{

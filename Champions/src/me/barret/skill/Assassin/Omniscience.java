@@ -101,7 +101,7 @@ public class Omniscience extends Skill implements interactSkill {
         Player p = e.getPlayer(); //spigot
         user u = userManager.getUser(p.getUniqueId()); //barret user type calls spigot api to get players uuid
 
-        if (u.getCurrentSkills().getSword().getName() == skillName)// checks if player build contains axe skill called skillname ("Orthogonal")
+        if (u.getCurrentBuild().getSword().getName() == skillName)// checks if player build contains axe skill called skillname ("Orthogonal")
         {
             timeAtLastActivation.put(p, System.currentTimeMillis());
             timeAtLastGlow.put(p,(long)0);

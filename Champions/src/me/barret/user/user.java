@@ -78,15 +78,18 @@ public class user {
 	
 	
 	/**
-	 * 
+	 * Returns the current build associated with the current kit the player is wearing
 	 * 
 	 * @return active user build
 	 */
-	public Build getCurrentSkills() {
+	public Build getCurrentBuild() {
 		if (currentKit == null) return null;
 		return allBuilds.get(currentKit).get(currentBuildIndexes.get(currentKit));
 	}
 	
+	public Build getCurrentBuildForKit(Kit k) {
+		return this.getBuildsForKit(k).get(currentBuildIndexes.get(k));
+	}
 	
 	
 	
@@ -100,7 +103,7 @@ public class user {
 	 * @param k
 	 * @return index of current build
 	 */
-	public Integer getActiveBuild(Kit k) {
+	public Integer getActiveBuildIndex(Kit k) {
 		return currentBuildIndexes.get(k);
 	}
 	

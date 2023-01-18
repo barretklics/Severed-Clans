@@ -697,7 +697,7 @@ if(isPreviewingWall.get(p))
 				Player p = e.getPlayer(); //spigot
 				user u = userManager.getUser(p.getUniqueId()); //barret user type calls spigot api to get players uuid
 
-					if(u.getCurrentSkills().getAxe().getName() == skillName)// checks if player build contains axe skill called skillname ("Orthogonal")
+					if(u.getCurrentBuild().getAxe().getName() == skillName)// checks if player build contains axe skill called skillname ("Orthogonal")
 					{
 					isPreviewingWall.put(p, false);
 					storedGlowLocation.put(p,p.getLocation());
