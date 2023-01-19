@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 
 
@@ -21,31 +22,16 @@ public class userManager implements Listener
 	
 	
 	@EventHandler
-	public void onPlayerJoin(PlayerJoinEvent event)
+	public static void onPlayerJoin(PlayerJoinEvent event)
 	{
 		Player p = event.getPlayer();
-		if (users.size() == 0 || users == null) {
-			user u = new user(p.getUniqueId());
-			users.add(u);
-			u.initializeBuilds();
-			
-			
-			
-		}
-		
-		for(user u: users) {
-			if (u.getUUID() == p.getUniqueId()) return; //stop executing if user is in list
-		}
-		
-		
 		user u = new user(p.getUniqueId());
 		users.add(u);
 		u.initializeBuilds();
 		
 	}
 
-	
-	
+
 	/**
 	 * 
 	 * 
