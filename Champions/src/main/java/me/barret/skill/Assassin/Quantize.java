@@ -3,6 +3,7 @@ package me.barret.skill.Assassin;
 
 	import java.util.HashMap;
 
+	import me.barret.build.BuildChangeEvent;
 	import org.bukkit.Bukkit;
 	import org.bukkit.ChatColor;
 	import org.bukkit.Location;
@@ -70,23 +71,31 @@ import me.barret.events.TickUpdateEvent;
 			}
 			else p.sendMessage("Quantize is on cooldown for " + Long.toString((quantizeCooldown.get(p) + 20000 - (lvl *1000)  - System.currentTimeMillis())/1000 ) + " more seconds");
 		}
-		
-		
+
+		/**
+		 * Barret edit to build change event and null checking
+		 * @param e
+		 */
 		//need a few cases: when player changes build ACTIVATES THIS THEORETICAL EVENT. when player logs into this build ACTIVATES THIS THEORETICAL EVENT when player changes from knight to assassin and this build is selected ACTIVATES THIS THEORETICAL EVENT @barret
 		//DOESNT WORK. ONLY DETECTS WHEN GOING FROM ASSASSIN TO NAKED and V.V.
-				@EventHandler // WILL BE CALLED every time kit is changed. 
-				//this is going to listen to spigot api's event handler which barret used to make a custom event buildchange
-				private void onBuildChange(kitChangeEvent e) //needs new event
-				{ 
-					Player p = e.getPlayer(); //spigot
-					user u = userManager.getUser(p.getUniqueId()); //barret user type calls spigot api to get players uuid
-					if(u.getCurrentBuild().getAxe().getName() == skillName)// checks if player build contains axe skill called skillname ("flash")
-					{ 
-						timeSinceLastQuantize.put(p, System.currentTimeMillis()); //sets time since last flash to "current time"
-						isEntangled.put(p, false);
-						isQuantizeOnCooldown.put(p, false);
-					}		
-				}
+		@EventHandler // WILL BE CALLED every time kit is changed.
+		//this is going to listen to spigot api's event handler which barret used to make a custom event buildchange
+		private void onBuildChange(BuildChangeEvent e) //needs new event
+		{
+			Player p = e.getPlayer(); //spigot
+			user u = userManager.getUser(p.getUniqueId()); //barret user type calls spigot api to get players uuid
+
+			if (e.getNewBuild() == null) return;
+			if (e.getNewBuild().getAxe() == null) return;
+
+
+			if(u.getCurrentBuild().getAxe().getName() == skillName)// checks if player build contains axe skill called skillname ("flash")
+			{
+				timeSinceLastQuantize.put(p, System.currentTimeMillis()); //sets time since last flash to "current time"
+				isEntangled.put(p, false);
+				isQuantizeOnCooldown.put(p, false);
+			}
+		}
 
 		public void doQuantize(Player p, int lvl)
 		{

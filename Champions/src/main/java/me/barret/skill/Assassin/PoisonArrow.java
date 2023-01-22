@@ -1,6 +1,7 @@
 package me.barret.skill.Assassin;
 
 import me.barret.Champions;
+import me.barret.build.BuildChangeEvent;
 import me.barret.events.TickUpdateEvent;
 import me.barret.kits.Kit;
 import me.barret.kits.kitChangeEvent;
@@ -173,10 +174,16 @@ public class PoisonArrow extends Skill
     }
 
 
-
+    /**
+     * Barret add null check and new event
+     * @param e
+     */
     @EventHandler
-    public void onBuildChange(kitChangeEvent e)
+    public void onBuildChange(BuildChangeEvent e)
     {
+        if (e.getNewBuild() == null) return;
+        if (e.getNewBuild().getBow() == null) return;
+        //ethan you need to check for name like (u.getCurrentBuild().getSword().getName() == skillName) thx
         Player p = e.getPlayer();
         user u = userManager.getUser(p.getUniqueId());
 

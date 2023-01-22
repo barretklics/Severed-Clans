@@ -1,5 +1,6 @@
 package me.barret.skill.Assassin;
 import me.barret.Champions;
+import me.barret.build.BuildChangeEvent;
 import me.barret.events.TickUpdateEvent;
 import me.barret.kits.Kit;
 import me.barret.kits.kitChangeEvent;
@@ -94,12 +95,18 @@ public class Omniscience extends Skill implements interactSkill {
         }
     }
 
+    /**
+     * Barret edit to null check
+     * @param e
+     */
     @EventHandler // WILL BE CALLED every time kit is changed.
     //this is going to listen to spigot api's event handler which barret used to make a custom event buildchange
-    private void onBuildChange(kitChangeEvent e) //needs new event
+    private void onBuildChange(BuildChangeEvent e) //needs new event
     {
         Player p = e.getPlayer(); //spigot
         user u = userManager.getUser(p.getUniqueId()); //barret user type calls spigot api to get players uuid
+        if (e.getNewBuild() == null) return;
+        if (e.getNewBuild().getSword() == null) return;
 
         if (u.getCurrentBuild().getSword().getName() == skillName)// checks if player build contains axe skill called skillname ("Orthogonal")
         {
