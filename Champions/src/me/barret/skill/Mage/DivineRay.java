@@ -74,84 +74,44 @@ private static Kit skillKit = kitManager.getKitFromString("Mage");
 
 
 	public void Ray(Player p, user u, int lvl) {
-		if (p.getEyeLocation().getBlock().isPassable() && p.getEyeLocation().add(0, -1, 0).getBlock().isPassable()) // checks initial head and foot block of player to see if both are within a passable block.
-		{
+		Location initialLoc = p.getEyeLocation();
+		Vector initialVec = p.getEyeLocation().getDirection();
+		Vector iterateVec = initialVec.clone();
+		Location iterateLocation = initialLoc.clone();
+		int maxDistance = 64;
+		int maxBounces = 2;
+		int maxHeight = p.getWorld().getMaxHeight() + 50;
+
+		double totalDistance = 0;
+		double iterateDistance = 0.1;
+		int bounces = 0;
+		while(totalDistance <=maxDistance && bounces < maxBounces) {
 
 
-
-
-			Location initialLoc = p.getLocation();
-			Location eyelocation = p.getEyeLocation();
-			World world = p.getWorld();
-
-			Vector initialVec = p.getEyeLocation().getDirection();
-			Vector iterateVec = p.getEyeLocation().getDirection(); // COOL IDEA: whenever it hits a block, make it make that block glow for a moment for all players (cube zone). maybe make the beam FAST but not instant? ;)
-
-			Location iterateLocation = p.getEyeLocation();
-
-
-
-			double totalDistance = 0;
-			int bounces = 0;
-			while(totalDistance <=512 && bounces < 2) //instead of 512: make upper bound at lvl 5, make a function based on lvl and charge percentage out of 100% (5s held)
-			{
-
-
-
-				if (iterateLocation.getBlock().isPassable())
-				{
-					p.sendMessage("iterating");
-
-
-					iterateVec = initialVec.clone(); //uncomment if doesnt work
-
-					iterateLocation.add(iterateVec.multiply(0.1)); //distance traveled per iteration
-
-					Particle.DustTransition dustTransition = new Particle.DustTransition(Color.fromRGB(0, 255, 0), Color.fromRGB(255, 255, 255), 1.0F); //green fade to white
-					p.getWorld().spawnParticle(Particle.DUST_COLOR_TRANSITION, iterateLocation, 50, 0,0,0,0,dustTransition,true);
-					p.sendMessage("spawned particles in iterate");
-
-				}
-				else
-				{
-					p.sendMessage("bounce"); //bounce doesnt work rn
-
-					//reflectedVec = originalVec - 2 * ( originalVec . normalVec ) * normalVec
-					//normal vec is the vector orthogonal to the plane the originalVec is reflecting off of, and . is the dot product
-
-					Vector originalVec = iterateVec.clone();
-					BlockFace surface = iterateLocation.getBlock().getFace(iterateLocation.getBlock());
-					Vector normalVec = surface.getOppositeFace().getDirection();
-					if(originalVec.dot(normalVec)>0) {
-						normalVec=normalVec.multiply(-1);
-					}
-
-					Vector reflectedVec = originalVec.subtract(normalVec.multiply(2*(originalVec.dot(normalVec)))); // reflection
-
-					//Vector unitVector = reflectedVec.normalize();
-					//Vector zeroLengthVector = unitVector.multiply(0.1);
-					//initialVec = zeroLengthVector;
-					//initialVec = reflectedVec;
-					iterateVec = reflectedVec;
-					iterateLocation.add(iterateVec.multiply(0.1));
-					if (!iterateLocation.add(iterateVec.multiply(0.1)).getBlock().isPassable())
-					{
-						iterateLocation.subtract(iterateVec.multiply(0.1));
-					}
-					Particle.DustTransition dustTransition = new Particle.DustTransition(Color.fromRGB(255, 0, 0), Color.fromRGB(0, 0, 0), 1.0F); //red fade to black?
-					p.getWorld().spawnParticle(Particle.DUST_COLOR_TRANSITION, iterateLocation, 50, 0,0,0,0,dustTransition,true);
-					p.sendMessage("spawned particles in bounce");
-					bounces ++;
-					justBounced.put(p,true);
-
-
-
-				}
+			if (iterateLocation.getY() > maxHeight) {
+				break;
 			}
 
+			if (!iterateLocation.add(iterateVec).getBlock().isPassable()) {
+				Vector originalVec = iterateVec.clone();
+				BlockFace surface = iterateLocation.getBlock().getFace(iterateLocation.getBlock().getRelative(BlockFace.DOWN));
+				Vector normalVec = surface.getOppositeFace().getDirection();
+				if(originalVec.dot(normalVec)>0) {
+					normalVec=normalVec.multiply(-1);
+				}
+				Vector reflectedVec = originalVec.subtract(normalVec.multiply(2*(originalVec.dot(normalVec))));
+				iterateVec = reflectedVec;
+				bounces++;
+				Particle.DustTransition dustTransition = new Particle.DustTransition(Color.RED, Color.BLACK, 1.0F);
+				p.getWorld().spawnParticle(Particle.REDSTONE, iterateLocation, 50, 0,0,0,0,dustTransition,true);
 
+			} else {
+				iterateLocation.add(iterateVec.normalize().multiply(iterateDistance));
+				Particle.DustTransition dustTransition = new Particle.DustTransition(Color.GREEN, Color.WHITE, 1.0F);
+				p.getWorld().spawnParticle(Particle.REDSTONE, iterateLocation, 50, 0,0,0,0,dustTransition,true);
+			}
+			totalDistance += iterateDistance;
 		}
-
 	}
 
 
