@@ -21,7 +21,7 @@ public class Champions extends JavaPlugin implements Listener{
 	public void onEnable() {
 		main = this;
 		
-		
+		System.out.println("Hello, Champions has arrived");
 		Bukkit.getPluginManager().registerEvents(new kitChangeListener(), this); //Detects when kit is swapped		
 		Bukkit.getPluginManager().registerEvents(new userManager(), this); //enables user management
 		Bukkit.getPluginManager().registerEvents(new skillListener(), this); //enables kit selector
