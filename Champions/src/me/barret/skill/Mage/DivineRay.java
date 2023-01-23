@@ -1,11 +1,16 @@
 package me.barret.skill.Mage;
 
+import me.barret.build.BuildChangeEvent;
 import me.barret.skill.Skill;
 import me.barret.skill.channelSkill;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 
 import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
@@ -30,9 +35,7 @@ import me.barret.user.user;
 import me.barret.user.userManager;
 import me.barret.utils.UtilItem;
 import me.barret.utils.UtilMessage;
-import org.bukkit.util.BlockIterator;
-import org.bukkit.util.EulerAngle;
-import org.bukkit.util.Vector;
+import org.bukkit.util.*;
 
 public class DivineRay extends Skill implements interactSkill
 {
@@ -52,11 +55,13 @@ private static Kit skillKit = kitManager.getKitFromString("Mage");
 
 	private static HashMap<Player,Long> timeActivated = new HashMap<Player, Long>();
 
+	private static HashMap<Player,Long> internalCD = new HashMap<Player, Long>();
+
 	private static HashMap<Player, Location> playerLoc = new HashMap<Player, Location>();
 
 	private static HashMap<Player, Integer> skillLevel = new HashMap<Player, Integer>();
 
-	private static HashMap<Player, Boolean> justBounced = new HashMap<Player, Boolean>();
+
     public DivineRay(Champions i)
     {
 		super(i, skillKit, skillName, skillType, description, MaxLevel);
@@ -65,73 +70,107 @@ private static Kit skillKit = kitManager.getKitFromString("Mage");
     @Override
 	public void activate(Player p, user u, int level)
 	{
-    //	isChanneling.put(p, true);
-    	timeActivated.put(p, System.currentTimeMillis());
-    	//p.sendMessage("You started channeling Divine Ray");
-		Ray(p,u,level);
-    	skillLevel.put(p,level);
-	}
-
-
-	public void Ray(Player p, user u, int lvl) {
-		Location initialLoc = p.getEyeLocation();
-		Vector initialVec = p.getEyeLocation().getDirection();
-		Vector iterateVec = initialVec.clone();
-		Location iterateLocation = initialLoc.clone();
-		int maxDistance = 64;
-		int maxBounces = 2;
-		int maxHeight = p.getWorld().getMaxHeight() + 50;
-
-		double totalDistance = 0;
-		double iterateDistance = 0.1;
-		int bounces = 0;
-		while(totalDistance <=maxDistance && bounces < maxBounces) {
-
-
-			if (iterateLocation.getY() > maxHeight) {
-				break;
-			}
-
-			if (!iterateLocation.add(iterateVec).getBlock().isPassable()) {
-				Vector originalVec = iterateVec.clone();
-				BlockFace surface = iterateLocation.getBlock().getFace(iterateLocation.getBlock().getRelative(BlockFace.DOWN));
-				Vector normalVec = surface.getOppositeFace().getDirection();
-				if(originalVec.dot(normalVec)>0) {
-					normalVec=normalVec.multiply(-1);
-				}
-				Vector reflectedVec = originalVec.subtract(normalVec.multiply(2*(originalVec.dot(normalVec))));
-				iterateVec = reflectedVec;
-				bounces++;
-				Particle.DustTransition dustTransition = new Particle.DustTransition(Color.RED, Color.BLACK, 1.0F);
-				p.getWorld().spawnParticle(Particle.REDSTONE, iterateLocation, 50, 0,0,0,0,dustTransition,true);
-
-			} else {
-				iterateLocation.add(iterateVec.normalize().multiply(iterateDistance));
-				Particle.DustTransition dustTransition = new Particle.DustTransition(Color.GREEN, Color.WHITE, 1.0F);
-				p.getWorld().spawnParticle(Particle.REDSTONE, iterateLocation, 50, 0,0,0,0,dustTransition,true);
-			}
-			totalDistance += iterateDistance;
+		if (internalCD.get(p) + 20 <=System.currentTimeMillis()) {
+			internalCD.put(p, System.currentTimeMillis());
+			timeActivated.put(p, System.currentTimeMillis());
+			CreateRay(p, u, level);
+			skillLevel.put(p, level);
 		}
 	}
 
 
-	public double dot(double x1, double y1, double z1, double x2, double y2, double z2) {
-		return x1 * x2 + y1 * y2 + z1 * z2;
+	public void CreateRay(Player p, user u, int lvl)
+	{
+		Vector iterateVector = p.getEyeLocation().getDirection(); //only for initial ray before bounce
+		Location iterateLocation = p.getEyeLocation(); //only for initial ray before bounce
+		World world = p.getWorld();
+		double iterateDistance = 0.1;
+
+		Vector lastSafeVector = p.getEyeLocation().getDirection();
+
+		Vector unitAdditionVector = iterateVector.clone().normalize().multiply(iterateDistance); //normalize makes it magnitude of 1 in same direction.
+
+		while(iterateLocation.getBlock().isPassable())
+		{
+			lastSafeVector = iterateVector.clone();
+			iterateVector = iterateVector.add(unitAdditionVector);
+			iterateLocation = iterateLocation.add(unitAdditionVector);
+
+		}
+		p.sendMessage("trying to get location of hit");
+		p.sendMessage("blockface hit: "+ getHitBlockFace(p,lastSafeVector,iterateVector, iterateLocation, world));
+		iterateLocation.getBlock().setType(Material.DIRT);
+		Particle.DustTransition dustTransition = new Particle.DustTransition(Color.fromRGB(0, 255, 0), Color.fromRGB(255, 255, 255), 1.0F); //green fade to white
+		p.getWorld().spawnParticle(Particle.DUST_COLOR_TRANSITION, iterateLocation, 50, 0,0,0,0,dustTransition,true);
+		p.sendMessage("Iterate Loc: "+iterateLocation);
+
+
+	}
+
+	public Vector getReflectedVector(Vector originalVec, Vector reflectedVec)
+	{
+		return null;
+	}
+
+
+	public BlockFace getHitBlockFace(Player p,Vector lastSafeVec, Vector iterVec,Location iterLoc, World world)
+	{
+		 //try going back to using "location" of center of faces. make SURE they are accurate. spawn particles to be sure.
+																											//since iterateLoc particle spawns in right place, iterateLoc is a good reference for which block face it is. find least dist from iterateLoc to all blockFaces.
+																											//least distance to blockface == closest blockface. return that blockface and use as face for normal vector calculation
+		Location blockLocation = iterLoc.getBlock().getLocation();
+
+		double centerX = blockLocation.getX() + 0.5;
+		double centerY = blockLocation.getY() + 0.5;
+		double centerZ = blockLocation.getZ() + 0.5;
+
+		Location centerLocation = new Location(blockLocation.getWorld(), centerX, centerY, centerZ);
+
+		Location topFace = centerLocation.clone();
+		topFace.setY(centerLocation.getBlockY() + 0.5);
+
+		Location bottomFace = centerLocation.clone();
+		bottomFace.setY(centerLocation.getBlockY() - 0.5);
+
+		Location northFace = centerLocation.clone();
+		northFace.setZ(centerLocation.getBlockZ() - 0.5);
+
+		Location eastFace = centerLocation.clone();
+		eastFace.setX(centerLocation.getBlockX() + 0.5);
+
+		Location southFace = centerLocation.clone();
+		southFace.setZ(centerLocation.getBlockZ() + 0.5);
+
+		Location westFace = centerLocation.clone();
+		westFace.setX(centerLocation.getBlockX() - 0.5);
+
+		BlockFace closestFace = null;
+		double closestDistance = Double.MAX_VALUE;
+
+		Location[] faceLocations = new Location[] {topFace, bottomFace, northFace, eastFace, southFace, westFace};
+		String[] faceNames = new String[] {"TOP", "BOTTOM", "NORTH", "EAST", "SOUTH", "WEST"};
+
+		for (int i = 0; i < faceLocations.length; i++) {
+			double distance = iterLoc.distance(faceLocations[i]);
+			if (distance < closestDistance) {
+				closestDistance = distance;
+				closestFace = BlockFace.valueOf(faceNames[i]);
 			}
+		}
+
+		return closestFace;
+
+	}
 
 
-			/*
-			BlockIterator blocksToAddFoot = new BlockIterator(eyelocation, -1, 512); //15 in here represents 15 blocks + lvl (lvl 5 is 20 block tp)
-			Location blockToAdd = eyelocation;
 
-			while (blocksToAddFoot.hasNext() && blockToAdd.getBlock().isPassable()) {
-				blockToAdd = blocksToAddFoot.next().getLocation();
+	@EventHandler
+	public void OnBuildChange(BuildChangeEvent e)
+	{
+		Player p = userManager.getUser(e.getPlayerUUID()).toPlayer();
+		internalCD.put(p,(long)0);
 
-				if (blockToAdd.getBlock().isPassable() && blockToAdd.add(0, 1, 0).getBlock().isPassable())
-				{
-					p.spawnParticle(Particle.FLAME, blockToAdd.add(0, 1, 0), 0,l.getDirection().getX() ,l.getDirection().getY(),l.getDirection().getZ(), 10);
-					//spawnParticle(Particle particle, Location location, int count, double offsetX, double offsetY, double offsetZ, double extra, T data)
-*/
+	}
 
 }
 
