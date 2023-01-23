@@ -24,7 +24,7 @@ public class Core extends JavaPlugin implements Listener{
 	public void onEnable() {
 		main = this;
 
-		
+		System.out.println("Hello, core has arrived");
 		
 		Bukkit.getPluginManager().registerEvents(new ButtonListener(), this); //Detects when kit is swapped		
 		Bukkit.getPluginManager().registerEvents(new cooldownListener(), this); //Detects when kit is swapped		

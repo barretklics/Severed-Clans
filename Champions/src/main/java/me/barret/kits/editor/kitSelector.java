@@ -224,7 +224,7 @@ public class kitSelector implements Listener{
 			
 			//Call event if skills change
 			Player p = e.getPlayer();
-			if (oldBuild.asList() != u.getCurrentBuild().asList()){
+			if (oldBuild != u.getCurrentBuild()){
 				Bukkit.getPluginManager().callEvent(new BuildChangeEvent(p, p.getUniqueId(), oldBuild, u.getCurrentBuild()));
 				
 

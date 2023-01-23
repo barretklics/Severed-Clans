@@ -1,13 +1,12 @@
 package me.barret.skill.Assassin;
 
 import me.barret.Champions;
-import me.barret.build.Build;
+import me.barret.build.BuildChangeEvent;
 import me.barret.events.TickUpdateEvent;
 import me.barret.kits.Kit;
 import me.barret.kits.kitChangeEvent;
 import me.barret.kits.kitManager;
 import me.barret.skill.Skill;
-import me.barret.skill.interactSkill;
 import me.barret.user.userManager;
 import org.bukkit.Color;
 import org.bukkit.Material;
@@ -57,26 +56,14 @@ public class PoisonArrow extends Skill
         super(i, skillKit, skillName, skillType, description, MaxLevel);
 
     }
-
-
-
     @EventHandler
     public void prepareArrow(PlayerInteractEvent e) {
 
         Player p = e.getPlayer();
-
-        user u = userManager.getUser(p.getUniqueId());
-
-        Build build = u.getCurrentBuild();
-        //p.sendMessage(""+build.getKit()); //returns Assassin@23u1y23123
-        //p.sendMessage(""+build.getBow()); // PoisonArrow@g232s12ghj3123
-       // p.sendMessage(""+build.getBow().getLevel()); // 0
-
-       // p.sendMessage(""+build.getBuildSkillFromSkill(build.getBow()).getLevel());
         //add if statement to detect if user is both assassin and has right skill
 
      //   p.sendMessage("outside prepare checks");
-
+        user u = userManager.getUser(p.getUniqueId());
     //    p.sendMessage("u.getCurrentSkills().getBow().getLevel(): " + u.getCurrentSkills().getBow().getLevel());
 
 
@@ -107,7 +94,7 @@ public class PoisonArrow extends Skill
                     } else {
                         p.sendMessage("You cannot prepare a poison arrow for another " + (timeAtLastPrepare.get(p) + (25000 - playerLevel.get(p) * 1000) - System.currentTimeMillis()) / 1000 + " seconds");
                     }
-                } //else p.sendMessage("hasn't been 20ms");
+                } else p.sendMessage("hasn't been 20ms");
             }
         }
     }
@@ -187,10 +174,16 @@ public class PoisonArrow extends Skill
     }
 
 
-
+    /**
+     * Barret add null check and new event
+     * @param e
+     */
     @EventHandler
-    public void onBuildChange(kitChangeEvent e)
+    public void onBuildChange(BuildChangeEvent e)
     {
+        if (e.getNewBuild() == null) return;
+        if (e.getNewBuild().getBow() == null) return;
+        //ethan you need to check for name like (u.getCurrentBuild().getSword().getName() == skillName) thx
         Player p = e.getPlayer();
         user u = userManager.getUser(p.getUniqueId());
 
@@ -201,7 +194,7 @@ public class PoisonArrow extends Skill
         timeAtLastPrepare.put(p, (long)0); // real ability cooldown
 
 
-       playerLevel.put(p,3); //change to variable once user.X.getBow().getLevel() is fixed
+        playerLevel.put(p,3); // DEBUG STATIC 3 right now, CHANGE TO VARIABLE VALUE LATER, USER CALL IS BROKEN RN
 
         //u.getCurrentSkills().getBow().getLevel(); returns 0 ....
 
