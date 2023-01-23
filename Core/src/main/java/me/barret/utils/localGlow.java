@@ -39,7 +39,7 @@ public class localGlow {
     for (Entity glowReceiver :player.getLocation().getWorld().getNearbyEntities(player.getLocation(),15,15,15))
     {
         if(glowReceiver instanceof Player)
-                if (glowReceiver != player) {
+                if (glowReceiver != player) { //if not player who cast it
 
 
                   //  player.sendMessage("within addGlow debug");

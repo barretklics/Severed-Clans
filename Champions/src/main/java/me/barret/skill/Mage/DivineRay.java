@@ -36,6 +36,8 @@ public class DivineRay extends Skill implements interactSkill
 
 	private static HashMap<Player, Integer> skillLevel = new HashMap<Player, Integer>();
 
+	private static HashMap<Player,Long> lastIterateTime = new HashMap<Player, Long>();
+
 
 	public DivineRay(Champions i)
 	{
@@ -43,8 +45,7 @@ public class DivineRay extends Skill implements interactSkill
 	}
 
 	@Override
-	public void activate(Player p, user u, int level)
-	{
+	public void activate(Player p, user u, int level) {
 		if (internalCD.get(p) + 20 <=System.currentTimeMillis()) {
 			internalCD.put(p, System.currentTimeMillis());
 			timeActivated.put(p, System.currentTimeMillis());
@@ -54,27 +55,46 @@ public class DivineRay extends Skill implements interactSkill
 	}
 
 
-	public void CreateRay(Player p, user u, int lvl) {
+	public void CreateRay(Player p, user u, int lvl){
 		Vector iterateVector = p.getEyeLocation().getDirection(); //only for initial ray before bounce
 		Location iterateLocation = p.getEyeLocation(); //only for initial ray before bounce
 		World world = p.getWorld();
-		double iterateDistance = 0.1;
-		int maxBounces = 5;
+
+		//modifiable values
+
+		double iterateDistance = 0.2; // BASICALLY DO NOT MODIFY, MIGHT MAKE ENTIRE RAYCAST NOT WORK. WORKING VALUES: 0.1 - the most tested, 0.2 works i think. 0.3 is INCONSISTENT.
+		int maxBounces = 3 * lvl - lvl; //modify for balance sake, make depend on lvl of player skill
+		double maxDistance = 128; //modify for balance sake, make depend on lvl of player skill
+		long iteratorCooldown = 20; //delay in ms between iterations
+
+		//end modifiable values
 
 		Vector lastSafeVector = p.getEyeLocation().getDirection();
 		Location lastSafeLocation = p.getEyeLocation();
 		Vector unitAdditionVector = iterateVector.clone().normalize().multiply(iterateDistance); //normalize makes it magnitude of 1 in same direction.
 		int bounces = 0;
+		double distanceTraveled = 0;
+		lastIterateTime.put(p,(long)0);
 
 		while (bounces <= maxBounces) {
 
-			while (iterateLocation.getBlock().isPassable()) {
-				lastSafeVector = iterateVector.clone();
-				lastSafeLocation = iterateLocation.clone();
-				iterateVector = iterateVector.add(unitAdditionVector);
-				iterateLocation = iterateLocation.add(unitAdditionVector);
-				Particle.DustTransition dustTransition = new Particle.DustTransition(Color.fromRGB(0, 255, 0), Color.fromRGB(255, 255, 255), 1.0F); //green fade to white
-				p.getWorld().spawnParticle(Particle.DUST_COLOR_TRANSITION, lastSafeLocation, 50, 0, 0, 0, 0, dustTransition, true);
+
+			while (iterateLocation.getBlock().isPassable()&& distanceTraveled <= maxDistance && iterateLocation.getY() <= world.getMaxHeight()+50) {
+				if (System.currentTimeMillis() >= lastIterateTime.get(p)+iteratorCooldown) {
+
+					lastSafeLocation = iterateLocation.clone();
+					iterateVector = iterateVector.add(unitAdditionVector);
+					iterateLocation = iterateLocation.add(unitAdditionVector);
+					Particle.DustTransition dustTransition = new Particle.DustTransition(Color.fromRGB(0, 255, 0), Color.fromRGB(255, 255, 255), 1.0F); //green fade to white
+					p.getWorld().spawnParticle(Particle.DUST_COLOR_TRANSITION, iterateLocation, 50, 0, 0, 0, 0, dustTransition, true);
+					distanceTraveled += iterateDistance; //adds iterateDistance to distance traveled, so it does not go on forever
+					lastIterateTime.put(p,System.currentTimeMillis());
+				}
+			}
+			if (distanceTraveled >= maxDistance || iterateLocation.getY() >= world.getMaxHeight()+50)
+			{
+				p.sendMessage("The divine ray traveled "+distanceTraveled+" blocks along "+bounces+" bounces.");
+				break;
 			}
 
 		/*													GOOD DEBUG MESSAGES IF REFLECTING WRONG OR ANYTHING ELSE
@@ -96,23 +116,40 @@ public class DivineRay extends Skill implements interactSkill
 		*/
 
 			BlockFace hitFace = getHitBlockFace(p, lastSafeLocation, iterateLocation, iterateLocation.getBlock(), world);
-
+			if (hitFace == BlockFace.SELF)
+			{
+				break;
+			}
 			Vector reflectedVector = getReflectedVector(iterateVector, hitFace);
 
 			unitAdditionVector = reflectedVector.clone().normalize().multiply(iterateDistance);
 			iterateVector = reflectedVector.clone().add(unitAdditionVector);
 			bounces++;
-			p.sendMessage("bounce "+bounces+" at "+iterateLocation.getX()+", "+iterateLocation.getY()+", "+iterateLocation.getZ());
-			while (!iterateLocation.getBlock().isPassable()) {
-				lastSafeVector = iterateVector.clone();
-				lastSafeLocation = iterateLocation.clone();
-				iterateVector = iterateVector.add(unitAdditionVector);
-				iterateLocation = iterateLocation.add(unitAdditionVector);
-				Particle.DustTransition dustTransition = new Particle.DustTransition(Color.fromRGB(0, 255, 0), Color.fromRGB(255, 255, 255), 1.0F); //green fade to white
-				p.getWorld().spawnParticle(Particle.DUST_COLOR_TRANSITION, lastSafeLocation, 50, 0, 0, 0, 0, dustTransition, true);
+			//p.sendMessage("bounce "+bounces+" at "+iterateLocation.getX()+", "+iterateLocation.getY()+", "+iterateLocation.getZ());
+
+			lastIterateTime.put(p,(long)0);
+
+			while (!iterateLocation.getBlock().isPassable()&& distanceTraveled <= maxDistance && iterateLocation.getY() <= world.getMaxHeight()+50) {
+				if (System.currentTimeMillis() >= lastIterateTime.get(p)+iteratorCooldown) {
+					lastSafeLocation = iterateLocation.clone();
+					iterateVector = iterateVector.add(unitAdditionVector);
+					iterateLocation = iterateLocation.add(unitAdditionVector);
+					Particle.DustTransition dustTransition = new Particle.DustTransition(Color.fromRGB(0, 255, 0), Color.fromRGB(255, 255, 255), 1.0F); //green fade to white
+					p.getWorld().spawnParticle(Particle.DUST_COLOR_TRANSITION, iterateLocation, 50, 0, 0, 0, 0, dustTransition, true);
+					distanceTraveled += iterateDistance; //adds iterateDistance to distance traveled, so it does not go on forever
+					lastIterateTime.put(p,System.currentTimeMillis());
+				}
+			}
+			if (distanceTraveled >= maxDistance || iterateLocation.getY() >= world.getMaxHeight()+50)
+			{
+				p.sendMessage("The divine ray traveled "+distanceTraveled+" blocks along "+bounces+" bounces.");
+				break;
 			}
 
-
+		if (bounces == maxBounces)
+		{
+			p.sendMessage("The divine ray traveled "+distanceTraveled+" blocks along "+bounces+" bounces.");
+		}
 		}
 	}
 
@@ -132,7 +169,7 @@ public class DivineRay extends Skill implements interactSkill
 		//least distance to blockface == closest blockface. return that blockface and use as face for normal vector calculation
 
 		Vector vectorBetweenSafeAndIter = iterLoc.toVector().subtract(safeLoc.toVector());
-		BlockFace hitFace = BlockFace.SELF;
+		BlockFace hitFace = BlockFace.SELF; //default value
 		RayTraceResult result = world.rayTraceBlocks(safeLoc, vectorBetweenSafeAndIter,0.2);
 		if (result != null)
 		{
@@ -149,7 +186,7 @@ public class DivineRay extends Skill implements interactSkill
 	{
 		Player p = userManager.getUser(e.getPlayerUUID()).toPlayer();
 		internalCD.put(p,(long)0);
-
+		lastIterateTime.put(p,(long)0);
 	}
 
 }
