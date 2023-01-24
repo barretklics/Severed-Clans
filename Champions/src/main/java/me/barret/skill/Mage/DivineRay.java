@@ -2,6 +2,7 @@ package me.barret.skill.Mage;
 
 import me.barret.Champions;
 import me.barret.build.BuildChangeEvent;
+import me.barret.events.TickUpdateEvent;
 import me.barret.kits.Kit;
 import me.barret.kits.kitManager;
 import me.barret.skill.Skill;
@@ -17,6 +18,8 @@ import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
 import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class DivineRay extends Skill implements interactSkill
 {
@@ -36,7 +39,15 @@ public class DivineRay extends Skill implements interactSkill
 
 	private static HashMap<Player, Integer> skillLevel = new HashMap<Player, Integer>();
 
-	private static HashMap<Player,Long> lastIterateTime = new HashMap<Player, Long>();
+	private static HashMap<Player,Long> lastIterationTime = new HashMap<Player, Long>();
+
+	private static HashMap<Player, Boolean> canIterate = new HashMap<Player, Boolean>();
+
+	private static HashMap<Player, Location> lastSafeLocationMap = new HashMap<Player, Location>();
+	private static HashMap<Player, Location> iterateLocationMap = new HashMap<Player, Location>();
+
+	//private static HashMap<Player, Location> lastSafeVectorMap = new HashMap<Player, Location>();
+	private static HashMap<Player, Location> iterateVectorMap = new HashMap<Player, Location>();
 
 
 	public DivineRay(Champions i)
@@ -54,6 +65,25 @@ public class DivineRay extends Skill implements interactSkill
 		}
 	}
 
+	@EventHandler
+	public void onTickUpdate(TickUpdateEvent e)
+	{
+		if(bounces <= maxBounces) {
+
+
+			if(iterateLocation.getBlock().isPassable()&& distanceTraveled <= maxDistance && iterateLocation.getY() <= world.getMaxHeight()+50))
+			{
+
+
+				lastSafeLocation = iterateLocation.clone();
+				iterateVector = iterateVector.add(unitAdditionVector);
+				iterateLocation = iterateLocation.add(unitAdditionVector);
+				Particle.DustTransition dustTransition = new Particle.DustTransition(Color.fromRGB(0, 255, 0), Color.fromRGB(255, 255, 255), 1.0F); //green fade to white
+				p.getWorld().spawnParticle(Particle.DUST_COLOR_TRANSITION, iterateLocation, 50, 0, 0, 0, 0, dustTransition, true);
+				distanceTraveled += iterateDistance; //adds iterateDistance to distance traveled, so it does not go on forever
+
+			}
+	}
 
 	public void CreateRay(Player p, user u, int lvl){
 		Vector iterateVector = p.getEyeLocation().getDirection(); //only for initial ray before bounce
@@ -65,8 +95,7 @@ public class DivineRay extends Skill implements interactSkill
 		double iterateDistance = 0.2; // BASICALLY DO NOT MODIFY, MIGHT MAKE ENTIRE RAYCAST NOT WORK. WORKING VALUES: 0.1 - the most tested, 0.2 works i think. 0.3 is INCONSISTENT.
 		int maxBounces = 3 * lvl - lvl; //modify for balance sake, make depend on lvl of player skill
 		double maxDistance = 128; //modify for balance sake, make depend on lvl of player skill
-		long iteratorCooldown = 20; //delay in ms between iterations
-
+		
 		//end modifiable values
 
 		Vector lastSafeVector = p.getEyeLocation().getDirection();
@@ -74,22 +103,20 @@ public class DivineRay extends Skill implements interactSkill
 		Vector unitAdditionVector = iterateVector.clone().normalize().multiply(iterateDistance); //normalize makes it magnitude of 1 in same direction.
 		int bounces = 0;
 		double distanceTraveled = 0;
-		lastIterateTime.put(p,(long)0);
-
+		Timer timer = new Timer();
 		while (bounces <= maxBounces) {
 
 
 			while (iterateLocation.getBlock().isPassable()&& distanceTraveled <= maxDistance && iterateLocation.getY() <= world.getMaxHeight()+50) {
-				if (System.currentTimeMillis() >= lastIterateTime.get(p)+iteratorCooldown) {
 
-					lastSafeLocation = iterateLocation.clone();
-					iterateVector = iterateVector.add(unitAdditionVector);
-					iterateLocation = iterateLocation.add(unitAdditionVector);
-					Particle.DustTransition dustTransition = new Particle.DustTransition(Color.fromRGB(0, 255, 0), Color.fromRGB(255, 255, 255), 1.0F); //green fade to white
-					p.getWorld().spawnParticle(Particle.DUST_COLOR_TRANSITION, iterateLocation, 50, 0, 0, 0, 0, dustTransition, true);
-					distanceTraveled += iterateDistance; //adds iterateDistance to distance traveled, so it does not go on forever
-					lastIterateTime.put(p,System.currentTimeMillis());
-				}
+
+				lastSafeLocation = iterateLocation.clone();
+				iterateVector = iterateVector.add(unitAdditionVector);
+				iterateLocation = iterateLocation.add(unitAdditionVector);
+				Particle.DustTransition dustTransition = new Particle.DustTransition(Color.fromRGB(0, 255, 0), Color.fromRGB(255, 255, 255), 1.0F); //green fade to white
+				p.getWorld().spawnParticle(Particle.DUST_COLOR_TRANSITION, iterateLocation, 50, 0, 0, 0, 0, dustTransition, true);
+				distanceTraveled += iterateDistance; //adds iterateDistance to distance traveled, so it does not go on forever
+
 			}
 			if (distanceTraveled >= maxDistance || iterateLocation.getY() >= world.getMaxHeight()+50)
 			{
@@ -127,18 +154,16 @@ public class DivineRay extends Skill implements interactSkill
 			bounces++;
 			//p.sendMessage("bounce "+bounces+" at "+iterateLocation.getX()+", "+iterateLocation.getY()+", "+iterateLocation.getZ());
 
-			lastIterateTime.put(p,(long)0);
-
 			while (!iterateLocation.getBlock().isPassable()&& distanceTraveled <= maxDistance && iterateLocation.getY() <= world.getMaxHeight()+50) {
-				if (System.currentTimeMillis() >= lastIterateTime.get(p)+iteratorCooldown) {
+
+
 					lastSafeLocation = iterateLocation.clone();
 					iterateVector = iterateVector.add(unitAdditionVector);
 					iterateLocation = iterateLocation.add(unitAdditionVector);
 					Particle.DustTransition dustTransition = new Particle.DustTransition(Color.fromRGB(0, 255, 0), Color.fromRGB(255, 255, 255), 1.0F); //green fade to white
 					p.getWorld().spawnParticle(Particle.DUST_COLOR_TRANSITION, iterateLocation, 50, 0, 0, 0, 0, dustTransition, true);
 					distanceTraveled += iterateDistance; //adds iterateDistance to distance traveled, so it does not go on forever
-					lastIterateTime.put(p,System.currentTimeMillis());
-				}
+
 			}
 			if (distanceTraveled >= maxDistance || iterateLocation.getY() >= world.getMaxHeight()+50)
 			{
@@ -186,7 +211,7 @@ public class DivineRay extends Skill implements interactSkill
 	{
 		Player p = userManager.getUser(e.getPlayerUUID()).toPlayer();
 		internalCD.put(p,(long)0);
-		lastIterateTime.put(p,(long)0);
+
 	}
 
 }
