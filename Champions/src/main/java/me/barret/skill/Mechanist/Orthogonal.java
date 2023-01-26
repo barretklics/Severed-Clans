@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import me.barret.utils.UtilTeam;
 import org.bukkit.*;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.MagmaCube;
 import org.bukkit.entity.Player;
@@ -196,7 +198,7 @@ public class Orthogonal extends Skill implements interactSkill
 						List<Location> cubeLocations= new ArrayList<Location>();
 						lastYaw.put(p, Yaw.getYaw(p));
 
-						for (int i = -2; i < 2; i++) {
+						for (int i = -2; i < 3; i++) {
 						
 							if (((Yaw.getYaw(p)==Yaw.WEST||Yaw.getYaw(p)==Yaw.EAST)&&isPreviewFacingOrthogonal.get(p)==true)
 							|| ((Yaw.getYaw(p)==Yaw.NORTH||Yaw.getYaw(p)==Yaw.SOUTH)&&isPreviewFacingOrthogonal.get(p)==false))
@@ -232,6 +234,9 @@ public class Orthogonal extends Skill implements interactSkill
 		m.setCustomName(p.getUniqueId().toString());
 		m.setCustomNameVisible(false);
 		m.setSilent(true);
+
+		UtilTeam.addColor((Entity) m, ChatColor.BLACK);
+		UtilTeam.removeCollision((Entity) m);
 	}
 
 

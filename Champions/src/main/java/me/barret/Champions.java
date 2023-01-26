@@ -2,6 +2,7 @@ package me.barret;
 
 import java.net.http.WebSocket.Listener;
 
+import me.barret.kits.listeners.AssassinListener;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -26,7 +27,7 @@ public class Champions extends JavaPlugin implements Listener{
 		Bukkit.getPluginManager().registerEvents(new userManager(), this); //enables user management
 		Bukkit.getPluginManager().registerEvents(new skillListener(), this); //enables kit selector
 		Bukkit.getPluginManager().registerEvents(new kitSelector(), this); //enables kit selector
-		
+		Bukkit.getPluginManager().registerEvents(new AssassinListener(), this); //enables kit selector
 		
 		
 		

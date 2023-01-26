@@ -3,6 +3,7 @@ package me.barret.kits;
 import java.util.ArrayList;
 import java.util.List;
 
+import me.barret.kits.type.Assassin;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -14,6 +15,8 @@ import me.barret.events.TickUpdateEvent;
 import me.barret.user.user;
 import me.barret.user.userManager;
 import me.barret.utils.UtilMessage;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 
 public class kitChangeListener implements Listener{
@@ -85,10 +88,8 @@ public class kitChangeListener implements Listener{
 		UtilMessage.sendBasic(p, ChatColor.BLUE + e.getNewKit().getKitName() + "> ", "Applied " + ChatColor.GREEN + build_name);
 		p.sendMessage(str);
 		
-		
-		
-		
-		
+
+
 		//TODO
 		//Play a sound
 		

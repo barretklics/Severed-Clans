@@ -1,5 +1,6 @@
 package me.barret;
 
+import me.barret.utils.UtilTeam;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
@@ -23,6 +24,10 @@ public class Core extends JavaPlugin implements Listener{
 	@Override
 	public void onEnable() {
 		main = this;
+
+
+		UtilTeam.reset(); //NEEDED TO RESET TEAMS
+
 
 		System.out.println("Hello, core has arrived");
 		

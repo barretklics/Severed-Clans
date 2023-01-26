@@ -36,7 +36,7 @@ public class kitChangeEvent extends Event
 		
 		me.barret.user.user user = userManager.getUser(p.getUniqueId());
 		//Bukkit.getPluginManager().callEvent(new BuildChangeEvent(p, p.getUniqueId(), user.getCurrentBuildForKit(oldKit), user.getCurrentBuild()));
-		
+
 	}
 
 	@Override
