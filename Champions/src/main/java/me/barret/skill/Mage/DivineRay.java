@@ -9,9 +9,11 @@ import me.barret.skill.Skill;
 import me.barret.skill.interactSkill;
 import me.barret.user.user;
 import me.barret.user.userManager;
+import me.barret.utils.UtilTeam;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.MagmaCube;
 import org.bukkit.entity.Player;
@@ -133,11 +135,11 @@ public class DivineRay extends Skill implements interactSkill
 							iterateLocation.subtract(unitAdditionVector);
 							lastSafeLocation.subtract(unitAdditionVector);
 							doReflection(p,lastSafeLocation,iterateLocation,unitAdditionVector);
+							makeBounceGlow(p);
 							bounces++;
 							bouncesMap.put(p,bounces);
 							distanceTraveled += iterateDistance;
 							distanceTraveledMap.put(p,distanceTraveled);
-							makeBounceGlow(p);
 							if(bounces < maxBounces)
 								p.getWorld().playSound(iterateLocation,Sound.BLOCK_AMETHYST_CLUSTER_STEP,(float) 1.8,(float) 1.8);
 							else p.getWorld().playSound(iterateLocation,Sound.BLOCK_AMETHYST_CLUSTER_BREAK,(float) 1.8,(float) 1.8);
@@ -156,9 +158,19 @@ public class DivineRay extends Skill implements interactSkill
 		}
 	}
 
+	public void cubeColor(MagmaCube m, Player p)
+	{
+		int bounces = bouncesMap.get(p);
+		p.sendMessage("bounces: "+bounces);
+		int bounceIndex = bounces%7;
+		ChatColor[] colorArray = {ChatColor.RED,ChatColor.GOLD,ChatColor.YELLOW,ChatColor.GREEN,ChatColor.BLUE,ChatColor.LIGHT_PURPLE,ChatColor.DARK_PURPLE};
+		p.sendMessage("color: "+colorArray[bounceIndex]);
+		UtilTeam.addColor((Entity) m, colorArray[bounceIndex]);
+	}
 
 	private void applyEffects(MagmaCube m, Player p)
 	{
+		cubeColor(m,p);
 		m.setInvisible(true);
 		m.setInvulnerable(true); //only causes to not wall suffocate does not cancel kill by player or entity
 		m.setSize(2);
@@ -261,7 +273,7 @@ public class DivineRay extends Skill implements interactSkill
 
 	public void spawnRainbowParticle(Player p, Location iterateLocation, int bounces)
 	{
-		int bounceIndex =  bounces % 6;
+		int bounceIndex =  bounces % 7;
 		Color white = Color.fromRGB(255,255,255);
 		Color black = Color.fromRGB(0,0,0);
 		Color red = Color.fromRGB(255,0,0);
