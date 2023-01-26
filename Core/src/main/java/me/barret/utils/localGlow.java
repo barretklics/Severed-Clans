@@ -36,13 +36,13 @@ public class localGlow {
 
 
 
-    for (Entity glowReceiver :player.getLocation().getWorld().getNearbyEntities(player.getLocation(),15,15,15))
-    {
-        if(glowReceiver instanceof Player)
-                if (glowReceiver != player) {
+        for (Entity glowReceiver :player.getLocation().getWorld().getNearbyEntities(player.getLocation(),15,15,15))
+        {
+            if(glowReceiver instanceof Player)
+                if (glowReceiver != player) { //if not player who cast it
 
 
-                  //  player.sendMessage("within addGlow debug");
+                    //  player.sendMessage("within addGlow debug");
 
 
                     ProtocolManager Manager = ProtocolLibrary.getProtocolManager();
@@ -80,16 +80,16 @@ public class localGlow {
 
                     Manager.sendServerPacket(player, packet);
                 }
-            }
+        }
 
     }
 
-public static void removeLocalGlow(Player player, int lvl)
-{
+    public static void removeLocalGlow(Player player, int lvl)
+    {
 
         //player.sendMessage("attempting glow remove");
 
-    for (Player glowReceiver : Bukkit.getOnlinePlayers()) {
+        for (Player glowReceiver : Bukkit.getOnlinePlayers()) {
 
 
 
@@ -135,6 +135,4 @@ public static void removeLocalGlow(Player player, int lvl)
 
     }
 }
-
-
 
