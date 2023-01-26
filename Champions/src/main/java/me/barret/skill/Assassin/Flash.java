@@ -167,7 +167,7 @@ public class Flash extends Skill implements interactSkill{ //inheritance
 				{
 					blockToAdd = blocksToAddFoot.next().getLocation();
                   
-					if (blockToAdd.getBlock().isPassable() && blockToAdd.add(0,1,0).getBlock().isPassable()) //checks if foot block and eye block in path are both passable. if so, adds to last possible loc HashMap
+					if (blockToAdd.getBlock().isPassable() && blockToAdd.clone().add(0,1,0).getBlock().isPassable()) //checks if foot block and eye block in path are both passable. if so, adds to last possible loc HashMap
 					{
 						p.getWorld().spawnParticle(Particle.WAX_ON,blockToAdd.add(0, 1, 0),1);
 						lastIteratedPassableLocation.put(p, blockToAdd.add(0,-1,0));//

@@ -249,7 +249,7 @@ public class Orthogonal extends Skill implements interactSkill
 	}
 
 	@EventHandler //toggles orthogonal and parallel viewing modes
-	public void SneakOrthSwitch(PlayerToggleSneakEvent event)
+	public void SneakOrthSwitch(PlayerToggleSneakEvent event) //SPAMS CONSOLE
 	{
 		Player p = event.getPlayer();
 		if(isPreviewingWall.get(p))
