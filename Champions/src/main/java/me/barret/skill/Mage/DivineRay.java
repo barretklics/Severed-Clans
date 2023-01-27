@@ -69,10 +69,11 @@ public class DivineRay extends Skill implements interactSkill
 
 	private static HashMap<Player, Integer>  iterationsPerTick = new HashMap<Player,Integer>();
 
+	private static HashMap<Player, Integer>  totalIterationsMap = new HashMap<Player,Integer>();
+
+	private static HashMap<Player, Integer>  iterationsPerParticleMap = new HashMap<Player,Integer>();
+
 	private static HashMap<Player, List<Location>> storedLocations = new HashMap<Player, List<Location>>();
-
-	private static HashMap<Player, List<Team>> teamMap = new HashMap<Player, List<Team>>();
-
 
 	private static HashMap<Player,Location> glowLocationMap = new HashMap<Player, Location>();
 	public DivineRay(Champions i)
@@ -116,6 +117,7 @@ public class DivineRay extends Skill implements interactSkill
 					Vector lastSafeVector = lastSafeVectorMap.get(p);
 					Vector unitAdditionVector = unitAdditionVectorMap.get(p);
 					double iterateDistance = iterateDistanceMap.get(p);
+					int totalIterations = totalIterationsMap.get(p);
 
 					if (bounces <= maxBounces && distanceTraveled <= maxDistance && iterateLocation.getY() <= world.getMaxHeight() + 50) { //LATER TO DO: Add checks for max iterations ONLY IF is inside block. have terminate after its gone 3 iterations while in block
 
@@ -126,8 +128,11 @@ public class DivineRay extends Skill implements interactSkill
 							iterateLocation.add(unitAdditionVector);
 							iterateLocationMap.put(p,iterateLocation);
 							distanceTraveled += iterateDistance;
+							totalIterations ++;
+							totalIterationsMap.put(p,totalIterations);
+
 							distanceTraveledMap.put(p,distanceTraveled);
-							spawnRainbowParticle(p,iterateLocation,bounces);
+							spawnRainbowParticle(p,iterateLocation,bounces,totalIterations);
 
 						}else
 						{
@@ -271,20 +276,21 @@ public class DivineRay extends Skill implements interactSkill
 		}
 	}
 
-	public void spawnRainbowParticle(Player p, Location iterateLocation, int bounces)
+	public void spawnRainbowParticle(Player p, Location iterateLocation, int bounces,int totalIterations)
 	{
-		int bounceIndex =  bounces % 7;
-		Color white = Color.fromRGB(255,255,255);
-		Color black = Color.fromRGB(0,0,0);
-		Color red = Color.fromRGB(255,0,0);
-		Color orange = Color.fromRGB(255,127,0);
-		Color yellow = Color.fromRGB(	255, 255, 0);
-		Color green = Color.fromRGB(	0, 255, 0);
-		Color blue = Color.fromRGB(	0, 0, 255);
-		Color indigo = Color.fromRGB(75, 0, 130);
-		Color violet = Color.fromRGB(	148, 0, 211);
+		if(totalIterations % iterationsPerParticleMap.get(p) == 0) {
+			int bounceIndex = bounces % 7;
+			Color white = Color.fromRGB(255, 255, 255);
+			Color black = Color.fromRGB(0, 0, 0);
+			Color red = Color.fromRGB(255, 0, 0);
+			Color orange = Color.fromRGB(255, 127, 0);
+			Color yellow = Color.fromRGB(255, 255, 0);
+			Color green = Color.fromRGB(0, 255, 0);
+			Color blue = Color.fromRGB(0, 0, 255);
+			Color indigo = Color.fromRGB(75, 0, 130);
+			Color violet = Color.fromRGB(148, 0, 211);
 
-		Color[] colorArray = {red,orange,yellow,green,blue,indigo,violet};
+			Color[] colorArray = {red, orange, yellow, green, blue, indigo, violet};
 
 		/*
 		if (bounceIndex != 6)
@@ -308,10 +314,9 @@ public class DivineRay extends Skill implements interactSkill
 		*/
 
 
-
-		Particle.DustTransition rainbowTransition = new Particle.DustTransition(white, colorArray[bounceIndex], 1.0F); //white to rainbow. slightly washed out
-		p.getWorld().spawnParticle(Particle.DUST_COLOR_TRANSITION, iterateLocation, 50, 0, 0, 0, 0, rainbowTransition, true);
-		//this block fades from white to rainbow color.
+			Particle.DustTransition rainbowTransition = new Particle.DustTransition(white, colorArray[bounceIndex], 1.0F); //white to rainbow. slightly washed out
+			p.getWorld().spawnParticle(Particle.DUST_COLOR_TRANSITION, iterateLocation, 50, 0, 0, 0, 0, rainbowTransition, true);
+			//this block fades from white to rainbow color.
 
 
 
@@ -326,7 +331,7 @@ public class DivineRay extends Skill implements interactSkill
 		p.getWorld().spawnParticle(Particle.DUST_COLOR_TRANSITION, iterateLocation, 50, 0, 0, 0, 0, rainbowTransition, true);
 		//this block fades from a rainbow color to black
 		*/
-
+		}
 	}
 
 	public void CreateRay(Player p, user u, int lvl){
@@ -342,6 +347,9 @@ public class DivineRay extends Skill implements interactSkill
 
 		int iterPerTick = 4; //it seems like iterations per tick does not affect phasing.
 		iterationsPerTick.put(p,iterPerTick);
+
+		int iterPerParticle = 1; //tweak this
+		iterationsPerParticleMap.put(p,iterPerParticle);
 
 		//end modifiable values
 
@@ -361,6 +369,8 @@ public class DivineRay extends Skill implements interactSkill
 		bouncesMap.put(p,bounces);
 		double distanceTraveled = 0;
 		distanceTraveledMap.put(p,distanceTraveled);
+		int totalIterations = 0;
+		totalIterationsMap.put(p,totalIterations);
 
 		canIterate.put(p,true);
 
