@@ -94,21 +94,21 @@ public class DivineRay extends Skill implements interactSkill
 
 		double iterateDistance = 0.1; // BASICALLY DO NOT MODIFY, MIGHT MAKE ENTIRE RAYCAST NOT WORK. WORKING VALUES: 0.1 - the most tested, //0.2 works i think. 0.3 is INCONSISTENT. - 0.1 is best for non phase sake
 		iterateDistanceMap.put(p,iterateDistance);
-		int maxBounces = 4 * lvl - lvl; //modify for balance sake, make depend on lvl of player skill
+		int maxBounces = 3 * lvl - lvl; //modify for balance sake, make depend on lvl of player skill
 		maxBouncesMap.put(p,maxBounces);
-		double maxDistance = 64 * (lvl + 1) - 64; //modify for balance sake, make depend on lvl of player skill
+		double maxDistance = 64 * (lvl + 1) - 32; //modify for balance sake, make depend on lvl of player skill
 		maxDistanceMap.put(p,maxDistance);
 
-		int iterPerTick = lvl + 1; //it seems like iterations per tick does not affect phasing.
+		int iterPerTick = lvl + 1; //speed at which ray travels. (too high looks choppy)
 		iterationsPerTick.put(p,iterPerTick);
 
-		double damageDealt = 1.5*lvl;
+		double damageDealt = 1.5*lvl + 0.5;
 		damageDealtMap.put(p,damageDealt);
 
-		int iterPerParticle = 2; //tweak this
+		int iterPerParticle = 2;
 		iterationsPerParticleMap.put(p,iterPerParticle);
 
-		int particleCount = 25; //tweak count
+		int particleCount = 25;
 		particleCountMap.put(p,particleCount);
 
 		long cooldown = 20 + lvl;
@@ -142,6 +142,7 @@ public class DivineRay extends Skill implements interactSkill
 			{
 				internalCD.put(p, System.currentTimeMillis());
 				timeActivated.put(p, System.currentTimeMillis());
+				killAllCubes();
 				CreateRay(p, u, level);
 				skillLevel.put(p, level);
 				nonPassableNonSolidCase.put(p,false);
@@ -174,13 +175,9 @@ public class DivineRay extends Skill implements interactSkill
 					double iterateDistance = iterateDistanceMap.get(p);
 					int totalIterations = totalIterationsMap.get(p);
 
-					if (bounces <= maxBounces && distanceTraveled <= maxDistance && iterateLocation.getY() <= world.getMaxHeight() + 50) {
+					if (bounces <= maxBounces && distanceTraveled <= maxDistance && iterateLocation.getY() <= world.getMaxHeight() + 50) { //checks for bounce limit, travel distance limit, and if ray is 50 above height limit
 
-//iterate here.
-
-
-
-						Boolean cornerCase = tryCornerCase(p,lastSafeLocation,iterateLocation);
+						Boolean cornerCase = tryCornerCase(p,lastSafeLocation,iterateLocation); //basically is a check for kissing bird corner scenario. may make isPassable redundant, but redundancies for safety's sake are good
 
 						if(iterateLocation.getBlock().isPassable()&&!cornerCase) {
 							lastSafeLocation = iterateLocation.clone();
@@ -196,6 +193,7 @@ public class DivineRay extends Skill implements interactSkill
 
 						}else
 						{
+							killAllCubes();
 							glowLocationMap.put(p,iterateLocation.getBlock().getLocation());
 							iterateLocation.subtract(unitAdditionVector);
 							lastSafeLocation.subtract(unitAdditionVector);
@@ -239,23 +237,28 @@ public class DivineRay extends Skill implements interactSkill
 			}
 				else{
 					if (getHitEntity(p) == null) {
-					//	p.sendMessage("hitentity NULL");
 						return;
 					} else {
-						//p.sendMessage("hitentity NOT NULL");
-						//p.sendMessage("Entity: " + getHitEntity(p).getName());
 						Entity hitEntity = getHitEntity(p);
-						hitEntity.setGlowing(true);
-						if (hitEntity instanceof Player) {
+
+						if (hitEntity instanceof Player) { //casts to hit entity to player because of team color method gimmick
 							Player hitPlayer = (Player) hitEntity;
-							playerColorer(hitPlayer, p);
+							if (hitPlayer == p) //if caster of DivineRay hits self with beam, cancels glow on caster.
+								return;
+
+							else {
+								hitPlayer.setGlowing(true);
+								playerColorer(hitPlayer, p);
+
+							}
 						}
 						else {
+							hitEntity.setGlowing(true);
 							entityColorer(hitEntity, p);
 						}
 						coloredEntityMap.put(hitEntity, System.currentTimeMillis());
 						if (hitEntity instanceof LivingEntity) {
-							if (hitEntity != p) {
+							if (hitEntity != p) {//if caster of DivineRay hits self with beam, cancels damage on caster.
 								((LivingEntity) hitEntity).damage(damageDealtMap.get(p));
 							}
 						}
