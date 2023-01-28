@@ -10,13 +10,11 @@ import me.barret.skill.interactSkill;
 import me.barret.user.user;
 import me.barret.user.userManager;
 import me.barret.utils.UtilTeam;
+import me.barret.cooldown.cooldownManager;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.MagmaCube;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.scoreboard.Scoreboard;
@@ -76,20 +74,78 @@ public class DivineRay extends Skill implements interactSkill
 	private static HashMap<Player, List<Location>> storedLocations = new HashMap<Player, List<Location>>();
 
 	private static HashMap<Player,Location> glowLocationMap = new HashMap<Player, Location>();
+
+	private static HashMap<Player, Integer>  particleCountMap = new HashMap<Player,Integer>();
+
+	private static HashMap<Player, Boolean> nonPassableNonSolidCase = new HashMap<Player, Boolean>();
+
+	private static HashMap<Entity, Long> coloredEntityMap = new HashMap<Entity, Long>();
+
+	private static HashMap<Player, Double> damageDealtMap = new HashMap<Player, Double>();
+
 	public DivineRay(Champions i)
 	{
 		super(i, skillKit, skillName, skillType, description, MaxLevel);
 	}
 
+	public void CreateRay(Player p, user u, int lvl){
+
+		//modifiable values
+
+		double iterateDistance = 0.1; // BASICALLY DO NOT MODIFY, MIGHT MAKE ENTIRE RAYCAST NOT WORK. WORKING VALUES: 0.1 - the most tested, //0.2 works i think. 0.3 is INCONSISTENT. - 0.1 is best for non phase sake
+		iterateDistanceMap.put(p,iterateDistance);
+		int maxBounces = 4 * lvl - lvl; //modify for balance sake, make depend on lvl of player skill
+		maxBouncesMap.put(p,maxBounces);
+		double maxDistance = 64 * (lvl + 1) - 64; //modify for balance sake, make depend on lvl of player skill
+		maxDistanceMap.put(p,maxDistance);
+
+		int iterPerTick = lvl + 1; //it seems like iterations per tick does not affect phasing.
+		iterationsPerTick.put(p,iterPerTick);
+
+		double damageDealt = 1.5*lvl;
+		damageDealtMap.put(p,damageDealt);
+
+		int iterPerParticle = 2; //tweak this
+		iterationsPerParticleMap.put(p,iterPerParticle);
+
+		int particleCount = 25; //tweak count
+		particleCountMap.put(p,particleCount);
+
+		long cooldown = 20 + lvl;
+
+		//end modifiable values
+
+		Vector lastSafeVector = p.getEyeLocation().getDirection();
+		lastSafeVectorMap.put(p,lastSafeVector);
+		Vector iterateVector = p.getEyeLocation().getDirection(); //only for initial ray before bounce
+		iterateVectorMap.put(p,iterateVector);
+		Location iterateLocation = p.getEyeLocation(); //only for initial ray before bounce
+		iterateLocationMap.put(p,iterateLocation);
+		Location lastSafeLocation = p.getEyeLocation();
+		lastSafeLocationMap.put(p,lastSafeLocation);
+		Vector unitAdditionVector = p.getEyeLocation().getDirection().normalize().multiply(iterateDistance); //normalize makes it magnitude of 1 in same direction.
+		unitAdditionVectorMap.put(p,unitAdditionVector);
+		int bounces = 0;
+		bouncesMap.put(p,bounces);
+		double distanceTraveled = 0;
+		distanceTraveledMap.put(p,distanceTraveled);
+		int totalIterations = 0;
+		totalIterationsMap.put(p,totalIterations);
+
+		canIterate.put(p,true);
+	}
+
 	@Override
 	public void activate(Player p, user u, int level) {
 		if (internalCD.get(p) + 20 <=System.currentTimeMillis()) {
-			internalCD.put(p, System.currentTimeMillis());
-			timeActivated.put(p, System.currentTimeMillis());
-			//p.sendMessage("activate");
-			CreateRay(p, u, level);
-			//p.sendMessage("activate post create ray");
-			skillLevel.put(p, level);
+			if(cooldownManager.addCooldown(p,skillName,7-level,true))
+			{
+				internalCD.put(p, System.currentTimeMillis());
+				timeActivated.put(p, System.currentTimeMillis());
+				CreateRay(p, u, level);
+				skillLevel.put(p, level);
+				nonPassableNonSolidCase.put(p,false);
+			}
 		}
 	}
 
@@ -97,8 +153,7 @@ public class DivineRay extends Skill implements interactSkill
 	@EventHandler
 	public void rayIterator(TickUpdateEvent e) {
 		for (Player p : Bukkit.getOnlinePlayers()) {
-			if (userManager.getUser(p.getUniqueId()).getCurrentBuild() == null || !userManager.getUser(p.getUniqueId()).getCurrentBuild().getSword().getName().equalsIgnoreCase(skillName) || canIterate.get(p) == false)
-			//canIterate logic may be problematic while building new format
+			if (userManager.getUser(p.getUniqueId()).getCurrentBuild() == null ||userManager.getUser(p.getUniqueId()).getCurrentBuild().getSword() ==null|| !userManager.getUser(p.getUniqueId()).getCurrentBuild().getSword().getName().equalsIgnoreCase(skillName) || canIterate.get(p) == false)
 			{
 				return;
 			}
@@ -119,10 +174,15 @@ public class DivineRay extends Skill implements interactSkill
 					double iterateDistance = iterateDistanceMap.get(p);
 					int totalIterations = totalIterationsMap.get(p);
 
-					if (bounces <= maxBounces && distanceTraveled <= maxDistance && iterateLocation.getY() <= world.getMaxHeight() + 50) { //LATER TO DO: Add checks for max iterations ONLY IF is inside block. have terminate after its gone 3 iterations while in block
+					if (bounces <= maxBounces && distanceTraveled <= maxDistance && iterateLocation.getY() <= world.getMaxHeight() + 50) {
 
 //iterate here.
-						if(iterateLocation.getBlock().isPassable()) {
+
+
+
+						Boolean cornerCase = tryCornerCase(p,lastSafeLocation,iterateLocation);
+
+						if(iterateLocation.getBlock().isPassable()&&!cornerCase) {
 							lastSafeLocation = iterateLocation.clone();
 							lastSafeLocationMap.put(p,lastSafeLocation);
 							iterateLocation.add(unitAdditionVector);
@@ -140,7 +200,7 @@ public class DivineRay extends Skill implements interactSkill
 							iterateLocation.subtract(unitAdditionVector);
 							lastSafeLocation.subtract(unitAdditionVector);
 							doReflection(p,lastSafeLocation,iterateLocation,unitAdditionVector);
-							makeBounceGlow(p);
+							makeCubesGlow(p);
 							bounces++;
 							bouncesMap.put(p,bounces);
 							distanceTraveled += iterateDistance;
@@ -150,10 +210,10 @@ public class DivineRay extends Skill implements interactSkill
 							else p.getWorld().playSound(iterateLocation,Sound.BLOCK_AMETHYST_CLUSTER_BREAK,(float) 1.8,(float) 1.8);
 						}
 
-						if (bounces >= maxBounces || distanceTraveled >= maxDistance) {
+						if (bounces >= maxBounces || distanceTraveled >= maxDistance || nonPassableNonSolidCase.get(p)) {
 							p.getWorld().playSound(iterateLocation,Sound.BLOCK_AMETHYST_BLOCK_CHIME,(float) 1.8,(float) 1.8);
 							p.sendMessage("The divine ray traveled " + (int) distanceTraveled + " blocks along " + bounces + " bounces.");
-							killBounceGlow();
+							killAllCubes();
 							canIterate.put(p, false);
 							return;
 						}
@@ -163,19 +223,94 @@ public class DivineRay extends Skill implements interactSkill
 		}
 	}
 
-	public void cubeColor(MagmaCube m, Player p)
+
+	//Caused by: java.lang.IllegalArgumentException: Start location is null!
+	//	at org.apache.commons.lang.Validate.notNull(Validate.java:192) ~[commons-lang-2.6.jar:2.6]
+	//	at org.bukkit.craftbukkit.v1_19_R2.CraftWorld.rayTraceEntities(CraftWorld.java:878) ~[spigot-1.19.3-R0.1-SNAPSHOT.jar:3635-Spigot-d90018e-941d7e9]
+	//	at org.bukkit.craftbukkit.v1_19_R2.CraftWorld.rayTraceEntities(CraftWorld.java:873) ~[spigot-1.19.3-R0.1-SNAPSHOT.jar:3635-Spigot-d90018e-941d7e9]
+	//	at org.bukkit.craftbukkit.v1_19_R2.CraftWorld.rayTraceEntities(CraftWorld.java:863) ~[spigot-1.19.3-R0.1-SNAPSHOT.jar:3635-Spigot-d90018e-941d7e9]
+	//	at me.barret.skill.Mage.DivineRay.getHitEntity(DivineRay.java:271) ~[?:?]
+	//	at me.barret.skill.Mage.DivineRay.rayInEntity(DivineRay.java:234) ~[?:?]
+	@EventHandler
+	public void rayInEntity(TickUpdateEvent e) {
+		for (Player p : Bukkit.getOnlinePlayers()) {
+			if (userManager.getUser(p.getUniqueId()).getCurrentBuild() == null || userManager.getUser(p.getUniqueId()).getCurrentBuild().getSword() ==null||!userManager.getUser(p.getUniqueId()).getCurrentBuild().getSword().getName().equalsIgnoreCase(skillName)) {
+				return;
+			}
+				else{
+					if (getHitEntity(p) == null) {
+					//	p.sendMessage("hitentity NULL");
+						return;
+					} else {
+						//p.sendMessage("hitentity NOT NULL");
+						//p.sendMessage("Entity: " + getHitEntity(p).getName());
+						Entity hitEntity = getHitEntity(p);
+						hitEntity.setGlowing(true);
+						entityColorer(hitEntity, p);
+						coloredEntityMap.put(hitEntity, System.currentTimeMillis());
+						if (hitEntity instanceof LivingEntity) {
+							if (hitEntity != p) {
+								((LivingEntity) hitEntity).damage(damageDealtMap.get(p));
+							}
+						}
+
+
+					}
+				}
+			}
+		}
+
+
+	@EventHandler
+	public void removeEntityGlow(TickUpdateEvent event) {
+		if (coloredEntityMap.isEmpty()) {
+			return;
+		} else {
+			for (Entity e : coloredEntityMap.keySet()) {
+				if (System.currentTimeMillis() > coloredEntityMap.get(e) + 5000) {
+					e.setGlowing(false);
+					entityColorReset(e);
+				}
+			}
+		}
+	}
+	public Entity getHitEntity(Player p)
 	{
-		int bounces = bouncesMap.get(p);
-		p.sendMessage("bounces: "+bounces);
-		int bounceIndex = bounces%7;
-		ChatColor[] colorArray = {ChatColor.RED,ChatColor.GOLD,ChatColor.YELLOW,ChatColor.GREEN,ChatColor.BLUE,ChatColor.LIGHT_PURPLE,ChatColor.DARK_PURPLE};
-		p.sendMessage("color: "+colorArray[bounceIndex]);
-		UtilTeam.addColor((Entity) m, colorArray[bounceIndex]);
+		if (!lastSafeLocationMap.containsKey(p) || !unitAdditionVectorMap.containsKey(p) || p.getWorld().rayTraceEntities(lastSafeLocationMap.get(p),unitAdditionVectorMap.get(p),0.1) == null)
+		{
+			return null;
+		}
+		else
+		{
+			RayTraceResult result = p.getWorld().rayTraceEntities(lastSafeLocationMap.get(p),unitAdditionVectorMap.get(p),0.1);
+			Entity hitEntity = result.getHitEntity();
+			return hitEntity;
+		}
+	}
+	public Boolean tryCornerCase(Player p, Location safeLoc, Location iterLoc)
+	{
+		if (p.getWorld().rayTraceBlocks(safeLoc,unitAdditionVectorMap.get(p),0.1) == null)
+		{
+			return false;
+		}
+		else return true;
 	}
 
+	public void entityColorer(Entity e, Player p)
+	{
+		int bounces = bouncesMap.get(p);
+		int bounceIndex = bounces%7;
+		ChatColor[] colorArray = {ChatColor.RED,ChatColor.GOLD,ChatColor.YELLOW,ChatColor.GREEN,ChatColor.BLUE,ChatColor.DARK_BLUE,ChatColor.DARK_PURPLE};
+		UtilTeam.addColor(e, colorArray[bounceIndex]);
+	}
+
+	public void entityColorReset(Entity e)
+	{
+		UtilTeam.removeColor(e);
+	}
 	private void applyEffects(MagmaCube m, Player p)
 	{
-		cubeColor(m,p);
+		entityColorer((Entity)m,p);
 		m.setInvisible(true);
 		m.setInvulnerable(true); //only causes to not wall suffocate does not cancel kill by player or entity
 		m.setSize(2);
@@ -204,7 +339,7 @@ public class DivineRay extends Skill implements interactSkill
 
 	public void doReflection(Player p, Location lastSafeLocation, Location iterateLocation, Vector unitAdditionVector)
 	{
-		BlockFace hitFace = getHitBlockFace(p,lastSafeLocation,iterateLocation);
+		BlockFace hitFace = getHitBlockFace(p,lastSafeLocation,iterateLocation,false);
 		Vector reflectedVec = getReflectedVector(p,iterateLocation,unitAdditionVector,hitFace);
 		unitAdditionVectorMap.put(p,reflectedVec);
 	}
@@ -224,13 +359,18 @@ public class DivineRay extends Skill implements interactSkill
 	}
 
 
-	public BlockFace getHitBlockFace(Player p,Location safeLoc,Location iterLoc) //good with new method :)
+
+	public BlockFace getHitBlockFace(Player p,Location safeLoc,Location iterLoc, Boolean bypassDefaultVal) //good with new method :)
 	{
 		//p.sendMessage("getting blockface");
 		World world = p.getWorld();
-
+		BlockFace hitFace = null;
 		Vector vectorBetweenSafeAndIter = iterLoc.toVector().subtract(safeLoc.toVector());
-		BlockFace hitFace = BlockFace.SELF; //default value
+		if(!bypassDefaultVal)
+		{
+			hitFace = BlockFace.SELF; //default value
+		}
+
 		//p.sendMessage("getting ray trace");
 		RayTraceResult result = world.rayTraceBlocks(safeLoc, vectorBetweenSafeAndIter,0.2);
 
@@ -247,11 +387,15 @@ public class DivineRay extends Skill implements interactSkill
 
 			//p.sendMessage("hitface "+ hitFace);
 		}
-		else p.sendMessage("There was no found hit between vec safeLoc and vec iterLoc");
+		else
+		{
+			p.sendMessage("The ray stopped because it was inside a non-passable, non solid block.");
+			nonPassableNonSolidCase.put(p,true);
+		}
 		return hitFace;
 	}
 
-	public void makeBounceGlow(Player p)
+	public void makeCubesGlow(Player p)
 	{
 		MagmaCube mag = (MagmaCube) p.getWorld().spawnEntity(glowLocationMap.get(p).clone().add(0.5,0,0.5), EntityType.MAGMA_CUBE,false);
 		applyEffects(mag, p);
@@ -262,7 +406,7 @@ public class DivineRay extends Skill implements interactSkill
 			storedLocations.get(p).add(mag.getLocation());
 		else storedLocations.put(p,cubeLocations);
 	}
-	public void killBounceGlow()
+	public void killAllCubes()
 	{
 		for (Player p: uuidStorage.keySet()) {
 			for (org.bukkit.entity.Entity ent : p.getWorld().getEntities()) {
@@ -315,7 +459,7 @@ public class DivineRay extends Skill implements interactSkill
 
 
 			Particle.DustTransition rainbowTransition = new Particle.DustTransition(white, colorArray[bounceIndex], 1.0F); //white to rainbow. slightly washed out
-			p.getWorld().spawnParticle(Particle.DUST_COLOR_TRANSITION, iterateLocation, 50, 0, 0, 0, 0, rainbowTransition, true);
+			p.getWorld().spawnParticle(Particle.DUST_COLOR_TRANSITION, iterateLocation, particleCountMap.get(p), 0, 0, 0, 0, rainbowTransition, true);
 			//this block fades from white to rainbow color.
 
 
@@ -334,107 +478,15 @@ public class DivineRay extends Skill implements interactSkill
 		}
 	}
 
-	public void CreateRay(Player p, user u, int lvl){
-
-		//modifiable values
-
-		double iterateDistance = 0.1; // BASICALLY DO NOT MODIFY, MIGHT MAKE ENTIRE RAYCAST NOT WORK. WORKING VALUES: 0.1 - the most tested, 0.2 works i think. 0.3 is INCONSISTENT.
-		iterateDistanceMap.put(p,iterateDistance);
-		int maxBounces = 3 * lvl - lvl; //modify for balance sake, make depend on lvl of player skill
-		maxBouncesMap.put(p,maxBounces);
-		double maxDistance = 128; //modify for balance sake, make depend on lvl of player skill
-		maxDistanceMap.put(p,maxDistance);
-
-		int iterPerTick = 4; //it seems like iterations per tick does not affect phasing.
-		iterationsPerTick.put(p,iterPerTick);
-
-		int iterPerParticle = 1; //tweak this
-		iterationsPerParticleMap.put(p,iterPerParticle);
-
-		//end modifiable values
-
-
-
-		Vector lastSafeVector = p.getEyeLocation().getDirection();
-		lastSafeVectorMap.put(p,lastSafeVector);
-		Vector iterateVector = p.getEyeLocation().getDirection(); //only for initial ray before bounce
-		iterateVectorMap.put(p,iterateVector);
-		Location iterateLocation = p.getEyeLocation(); //only for initial ray before bounce
-		iterateLocationMap.put(p,iterateLocation);
-		Location lastSafeLocation = p.getEyeLocation();
-		lastSafeLocationMap.put(p,lastSafeLocation);
-		Vector unitAdditionVector = p.getEyeLocation().getDirection().normalize().multiply(iterateDistance); //normalize makes it magnitude of 1 in same direction.
-		unitAdditionVectorMap.put(p,unitAdditionVector);
-		int bounces = 0;
-		bouncesMap.put(p,bounces);
-		double distanceTraveled = 0;
-		distanceTraveledMap.put(p,distanceTraveled);
-		int totalIterations = 0;
-		totalIterationsMap.put(p,totalIterations);
-
-		canIterate.put(p,true);
-
-
-//end the CreateRay here.
-/*
-		World world = p.getWorld();
-			//first while loop
-				lastSafeLocation = iterateLocation.clone();
-				iterateVector = iterateVector.add(unitAdditionVector);
-				iterateLocation = iterateLocation.add(unitAdditionVector);
-				Particle.DustTransition dustTransition = new Particle.DustTransition(Color.fromRGB(0, 255, 0), Color.fromRGB(255, 255, 255), 1.0F); //green fade to white
-				p.getWorld().spawnParticle(Particle.DUST_COLOR_TRANSITION, iterateLocation, 50, 0, 0, 0, 0, dustTransition, true);
-				distanceTraveled += iterateDistance; //adds iterateDistance to distance traveled, so it does not go on forever
-			//first while loop END
-			BlockFace hitFace = getHitBlockFace(p, lastSafeLocation, iterateLocation);
-			if (hitFace == BlockFace.SELF)
-			{
-				break;
-			}
-			Vector reflectedVector = getReflectedVector(iterateVector, hitFace);
-			unitAdditionVector = reflectedVector.clone().normalize().multiply(iterateDistance);
-			iterateVector = reflectedVector.clone().add(unitAdditionVector);
-			bounces++;
-			//p.sendMessage("bounce "+bounces+" at "+iterateLocation.getX()+", "+iterateLocation.getY()+", "+iterateLocation.getZ());
-			while (!iterateLocation.getBlock().isPassable()&& distanceTraveled <= maxDistance && iterateLocation.getY() <= world.getMaxHeight()+50) {
-					lastSafeLocation = iterateLocation.clone();
-					iterateVector = iterateVector.add(unitAdditionVector);
-					iterateLocation = iterateLocation.add(unitAdditionVector);
-					Particle.DustTransition crustTransition = new Particle.DustTransition(Color.fromRGB(0, 255, 0), Color.fromRGB(255, 255, 255), 1.0F); //green fade to white
-					p.getWorld().spawnParticle(Particle.DUST_COLOR_TRANSITION, iterateLocation, 50, 0, 0, 0, 0, crustTransition, true);
-					distanceTraveled += iterateDistance; //adds iterateDistance to distance traveled, so it does not go on forever
-			}
-			if (distanceTraveled >= maxDistance || iterateLocation.getY() >= world.getMaxHeight()+50)
-			{
-				p.sendMessage("The divine ray traveled "+distanceTraveled+" blocks along "+bounces+" bounces.");
-				break;
-			}
-		if (bounces == maxBounces)
-		{
-			p.sendMessage("The divine ray traveled "+distanceTraveled+" blocks along "+bounces+" bounces.");
-		}
- */
-	}
-
-
-
-
-
-
-
-
-
-
-
 	@EventHandler
 	public void OnBuildChange(BuildChangeEvent e)
 	{
 		Player p = userManager.getUser(e.getPlayerUUID()).toPlayer();
+		p.setGlowing(false);
 		internalCD.put(p,(long)0);
 		canIterate.put(p,false);
 		uuidStorage.put(p,p.getUniqueId().toString());
-
-
+		nonPassableNonSolidCase.put(p,false);
 	}
 
 }

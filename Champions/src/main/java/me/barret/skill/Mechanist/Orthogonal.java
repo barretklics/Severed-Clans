@@ -257,6 +257,9 @@ public class Orthogonal extends Skill implements interactSkill
 	public void SneakOrthSwitch(PlayerToggleSneakEvent event)
 	{
 		Player p = event.getPlayer();
+		if (userManager.getUser(p.getUniqueId()).getCurrentBuild() == null || userManager.getUser(p.getUniqueId()).getCurrentBuild().getAxe() ==null||!userManager.getUser(p.getUniqueId()).getCurrentBuild().getAxe().getName().equalsIgnoreCase(skillName)) {
+			return;
+		}
 		if(isPreviewingWall.get(p))
 		{
 			if(p.isSneaking())

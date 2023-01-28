@@ -64,9 +64,9 @@ public class PoisonArrow extends Skill
 
      //   p.sendMessage("outside prepare checks");
         user u = userManager.getUser(p.getUniqueId());
-    //    p.sendMessage("u.getCurrentSkills().getBow().getLevel(): " + u.getCurrentSkills().getBow().getLevel());
-
-
+        if (userManager.getUser(p.getUniqueId()).getCurrentBuild() == null || userManager.getUser(p.getUniqueId()).getCurrentBuild().getBow() ==null||!userManager.getUser(p.getUniqueId()).getCurrentBuild().getBow().getName().equalsIgnoreCase(skillName)) {
+            return;
+        }
 //add check for player skill, bugged out earlier, ask barret
 
 
