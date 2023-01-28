@@ -246,7 +246,13 @@ public class DivineRay extends Skill implements interactSkill
 						//p.sendMessage("Entity: " + getHitEntity(p).getName());
 						Entity hitEntity = getHitEntity(p);
 						hitEntity.setGlowing(true);
-						entityColorer(hitEntity, p);
+						if (hitEntity instanceof Player) {
+							Player hitPlayer = (Player) hitEntity;
+							playerColorer(hitPlayer, p);
+						}
+						else {
+							entityColorer(hitEntity, p);
+						}
 						coloredEntityMap.put(hitEntity, System.currentTimeMillis());
 						if (hitEntity instanceof LivingEntity) {
 							if (hitEntity != p) {
@@ -268,6 +274,12 @@ public class DivineRay extends Skill implements interactSkill
 		} else {
 			for (Entity e : coloredEntityMap.keySet()) {
 				if (System.currentTimeMillis() > coloredEntityMap.get(e) + 5000) {
+
+					if (e instanceof Player)
+					{
+						e.setGlowing(false);
+						playerColorReset((Player) e);
+					}
 					e.setGlowing(false);
 					entityColorReset(e);
 				}
@@ -303,7 +315,19 @@ public class DivineRay extends Skill implements interactSkill
 		ChatColor[] colorArray = {ChatColor.RED,ChatColor.GOLD,ChatColor.YELLOW,ChatColor.GREEN,ChatColor.BLUE,ChatColor.DARK_BLUE,ChatColor.DARK_PURPLE};
 		UtilTeam.addColor(e, colorArray[bounceIndex]);
 	}
+	public void playerColorer(Player hitPlayer, Player p)
+	{
+		int bounces = bouncesMap.get(p);
+		int bounceIndex = bounces%7;
+		ChatColor[] colorArray = {ChatColor.RED,ChatColor.GOLD,ChatColor.YELLOW,ChatColor.GREEN,ChatColor.BLUE,ChatColor.DARK_BLUE,ChatColor.DARK_PURPLE};
+		UtilTeam.addColorToPlayer(hitPlayer, colorArray[bounceIndex]);
+	}
 
+
+	public void playerColorReset (Player p)
+	{
+		UtilTeam.removeColorFromPlayer(p);
+	}
 	public void entityColorReset(Entity e)
 	{
 		UtilTeam.removeColor(e);

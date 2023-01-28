@@ -37,13 +37,33 @@ public class UtilTeam {
         team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
     }
 
+    public static void addColorToPlayer(Player p, ChatColor c){
+        ScoreboardManager manager = Bukkit.getScoreboardManager();
+        Scoreboard board = manager.getMainScoreboard();
 
-    public static void removeColor(Entity e) //untested
+
+        Team team = board.registerNewTeam(UUID.randomUUID().toString());
+        team.setColor(c);
+        team.addEntry(p.getName());
+        team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
+    }
+
+
+    public static void removeColor(Entity e)
     {
         ScoreboardManager manager = Bukkit.getScoreboardManager();
         Scoreboard board = manager.getMainScoreboard();
         for (Team t: board.getTeams()){
             t.removeEntry(e.getUniqueId().toString());
+        }
+    }
+
+    public static void removeColorFromPlayer(Player p)
+    {
+        ScoreboardManager manager = Bukkit.getScoreboardManager();
+        Scoreboard board = manager.getMainScoreboard();
+        for (Team t: board.getTeams()){
+            t.removeEntry(p.getName());
         }
     }
 
