@@ -83,6 +83,16 @@ public class DivineRay extends Skill implements interactSkill
 
 	private static HashMap<Player, Double> damageDealtMap = new HashMap<Player, Double>();
 
+	private static HashMap<Player, ArrayList<LivingEntity>> hitEntities = new HashMap<Player, ArrayList<LivingEntity>>();
+
+	private static HashMap<Player, Long> timeOfLastDamage = new HashMap<Player, Long>();
+
+	private static HashMap<LivingEntity, Long> lastBeamHitTimeForEntity = new HashMap<LivingEntity,Long>();
+
+	private static HashMap<LivingEntity, Boolean> isEntityBeamDamageable = new HashMap<LivingEntity, Boolean>();
+
+	private static HashMap<Player, Boolean> secondActivate = new HashMap<Player, Boolean>();
+
 	public DivineRay(Champions i)
 	{
 		super(i, skillKit, skillName, skillType, description, MaxLevel);
@@ -111,8 +121,6 @@ public class DivineRay extends Skill implements interactSkill
 		int particleCount = 25;
 		particleCountMap.put(p,particleCount);
 
-		long cooldown = 20 + lvl;
-
 		//end modifiable values
 
 		Vector lastSafeVector = p.getEyeLocation().getDirection();
@@ -138,9 +146,13 @@ public class DivineRay extends Skill implements interactSkill
 	@Override
 	public void activate(Player p, user u, int level) {
 		if (internalCD.get(p) + 20 <=System.currentTimeMillis()) {
-			if(cooldownManager.addCooldown(p,skillName,7-level,true))
+			if(cooldownManager.addCooldown(p,skillName,20-level,true))
 			{
 				internalCD.put(p, System.currentTimeMillis());
+				if(canIterate.get(p)) //checks for activation while beam is alive, will kill old beam. fixes bug with ramping damage if cooldown is too short and activations are spammed before beam dies
+				{
+					secondActivate.put(p,true);
+				}
 				timeActivated.put(p, System.currentTimeMillis());
 				killAllCubes();
 				CreateRay(p, u, level);
@@ -208,11 +220,13 @@ public class DivineRay extends Skill implements interactSkill
 							else p.getWorld().playSound(iterateLocation,Sound.BLOCK_AMETHYST_CLUSTER_BREAK,(float) 1.8,(float) 1.8);
 						}
 
-						if (bounces >= maxBounces || distanceTraveled >= maxDistance || nonPassableNonSolidCase.get(p)) {
+						if (bounces >= maxBounces || distanceTraveled >= maxDistance || nonPassableNonSolidCase.get(p) || secondActivate.get(p)) {
 							p.getWorld().playSound(iterateLocation,Sound.BLOCK_AMETHYST_BLOCK_CHIME,(float) 1.8,(float) 1.8);
+							resetDamageToStandard(p);
 							p.sendMessage("The divine ray traveled " + (int) distanceTraveled + " blocks along " + bounces + " bounces.");
 							killAllCubes();
 							canIterate.put(p, false);
+							secondActivate.put(p,false);
 							return;
 						}
 					}
@@ -259,7 +273,16 @@ public class DivineRay extends Skill implements interactSkill
 						coloredEntityMap.put(hitEntity, System.currentTimeMillis());
 						if (hitEntity instanceof LivingEntity) {
 							if (hitEntity != p) {//if caster of DivineRay hits self with beam, cancels damage on caster.
-								((LivingEntity) hitEntity).damage(damageDealtMap.get(p));
+
+									if(!isEntityBeamDamageable.containsKey((LivingEntity) hitEntity)||isEntityBeamDamageable.get(hitEntity)) {
+										isEntityBeamDamageable.put((LivingEntity)hitEntity,false);
+										lastBeamHitTimeForEntity.put((LivingEntity) hitEntity,System.currentTimeMillis());
+										dealDamage(p, (LivingEntity) hitEntity);
+
+									}
+
+
+
 							}
 						}
 
@@ -269,6 +292,74 @@ public class DivineRay extends Skill implements interactSkill
 			}
 		}
 
+		public void dealDamage(Player p,LivingEntity e) //needs to do a time check for each entity to not increment it twice if it is in an entity twice within 0.5s (mc damage cooldown) of first hit on that entity
+		{
+			if (e instanceof MagmaCube)
+			{
+				if (e.getCustomName().equalsIgnoreCase(uuidStorage.get(p)))
+				{
+					return;
+				}
+			}
+
+			if (!hitEntities.isEmpty() && hitEntities.containsKey(p))
+			{
+				ArrayList<LivingEntity> eList = hitEntities.get(p);
+				eList.add(e);
+				hitEntities.put(p,eList);
+			}
+			else
+			{
+				ArrayList<LivingEntity> eList = new ArrayList<>();
+				eList.add(e);
+				hitEntities.put(p,eList);
+			}
+
+			ArrayList<LivingEntity> entityList = hitEntities.get(p);
+			EntityType type = e.getType();
+			int countOfSameType = 0;
+
+			for (int i = 0; i < entityList.size(); i++)
+			{
+				if(entityList.get(i).getType() == type)
+				{
+					countOfSameType ++;
+				}
+			}
+
+
+			p.sendMessage("Damage dealt: "+countOfSameType * damageDealtMap.get(p)+" on "+ type);
+			e.damage(countOfSameType * damageDealtMap.get(p));
+
+		}
+
+		public void resetDamageToStandard(Player p)
+		{
+			if (!hitEntities.isEmpty())
+			{
+				if (hitEntities.containsKey(p))
+				{
+					ArrayList<LivingEntity> entityList = hitEntities.get(p);
+					entityList.clear();
+					hitEntities.put(p,entityList);
+				}
+			}
+		}
+
+	@EventHandler
+	public void hitCooldown(TickUpdateEvent event)
+	{
+	if (lastBeamHitTimeForEntity.isEmpty()) {
+		return;
+	} else {
+	for (LivingEntity e : lastBeamHitTimeForEntity.keySet()) {
+		if (System.currentTimeMillis() > lastBeamHitTimeForEntity.get(e) + 500) {
+
+			isEntityBeamDamageable.put(e,true);
+		}
+	}
+}
+}
 
 	@EventHandler
 	public void removeEntityGlow(TickUpdateEvent event) {
@@ -514,6 +605,8 @@ public class DivineRay extends Skill implements interactSkill
 		canIterate.put(p,false);
 		uuidStorage.put(p,p.getUniqueId().toString());
 		nonPassableNonSolidCase.put(p,false);
+		timeOfLastDamage.put(p,(long)0);
+		secondActivate.put(p,false);
 	}
 
 }
