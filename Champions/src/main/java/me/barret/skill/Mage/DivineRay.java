@@ -380,6 +380,7 @@ public class DivineRay extends Skill implements interactSkill
 			}
 		}
 	}
+
 	public Entity getHitEntity(Player p)
 	{
 		if (!lastSafeLocationMap.containsKey(p) || !unitAdditionVectorMap.containsKey(p) || p.getWorld().rayTraceEntities(lastSafeLocationMap.get(p),unitAdditionVectorMap.get(p),0.1) == null)
@@ -444,8 +445,18 @@ public class DivineRay extends Skill implements interactSkill
 	@EventHandler
 	private void cubeInvulnerability(EntityDamageByEntityEvent event)
 	{
+		if (uuidStorage.isEmpty())
+		{
+			return;
+		}
+
 		for (Player p:uuidStorage.keySet())
 		{
+			if (userManager.getUser(p.getUniqueId()).getCurrentBuild() == null || userManager.getUser(p.getUniqueId()).getCurrentBuild().getSword() == null || !userManager.getUser(p.getUniqueId()).getCurrentBuild().getSword().getName().equalsIgnoreCase(skillName))
+			{
+				return;
+			}
+
 			if(event.getEntity().getCustomName().equalsIgnoreCase(uuidStorage.get(p)))
 			{
 				if(event.getEntityType() == EntityType.MAGMA_CUBE)

@@ -13,6 +13,7 @@ import me.barret.skill.Assassin.Quantize;
 import me.barret.skill.Mage.DivineRay;
 import me.barret.skill.Mechanist.GlueGlob;
 import me.barret.skill.Mechanist.Orthogonal;
+import me.barret.skill.Ranger.BinaryExplosive;
 import me.barret.skill.Skill.SkillType;
 import me.barret.skill.Mage.Blizzard;
 import me.barret.skill.Mage.FireBlast;
@@ -61,6 +62,8 @@ public class skillManager {
 	        	//Sword
 	        	//Axe
 	        		//skills.put("Agility", new Agility(i));
+				//Bow
+					skills.put("Binary Explosive", new BinaryExplosive(i));
 	        		
 	        		
 	        		

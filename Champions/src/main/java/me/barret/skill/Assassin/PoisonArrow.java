@@ -12,10 +12,7 @@ import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
-import org.bukkit.entity.Arrow;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityShootBowEvent;
@@ -102,6 +99,10 @@ public class PoisonArrow extends Skill
     @EventHandler
     public void fireArrow(EntityShootBowEvent event)
     {
+        if (isPrepared.isEmpty() || event.getEntityType() != EntityType.PLAYER)
+        {
+            return;
+        }
         Entity e = event.getEntity();
         if (e instanceof Player)
         {
@@ -141,7 +142,7 @@ public class PoisonArrow extends Skill
         if (e.getEntity().getShooter() instanceof Player)
         {
             Player p = (Player) e.getEntity().getShooter();
-            if(preparedArrowFlying.get(p))
+            if(!preparedArrowFlying.isEmpty() && preparedArrowFlying.containsKey(p)&& preparedArrowFlying.get(p))
             {
 
                 if (e.getHitBlock() != null)
