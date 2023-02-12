@@ -34,54 +34,55 @@ public class localGlow {
     public static void addGlow(Player player, int lvl) {
 
 
+        if (player.getLocation().getWorld().getNearbyEntities(player.getLocation(), 15, 15, 15) == null) {
+            return;
+        } else {
+            for (Entity glowReceiver : player.getLocation().getWorld().getNearbyEntities(player.getLocation(), 15, 15, 15)) {
+                if (glowReceiver instanceof Player)
+                    if (glowReceiver != player) { //if not player who cast it
 
 
-        for (Entity glowReceiver :player.getLocation().getWorld().getNearbyEntities(player.getLocation(),15,15,15))
-        {
-            if(glowReceiver instanceof Player)
-                if (glowReceiver != player) { //if not player who cast it
+                        //  player.sendMessage("within addGlow debug");
 
 
-                    //  player.sendMessage("within addGlow debug");
+                        ProtocolManager Manager = ProtocolLibrary.getProtocolManager();
+
+                        PacketContainer packet = Manager.createPacket(PacketType.Play.Server.ENTITY_METADATA);
+
+                        packet.getIntegers().write(0, glowReceiver.getEntityId()); //Set packet's entity id                 //not sure whether this is the person who sees glow or person who gets glow.
+
+                        WrappedDataWatcher dataWatcher = new WrappedDataWatcher(); //Create data watcher, the Entity Metadata packet requires this
+
+                        WrappedDataWatcher.Serializer serializer = WrappedDataWatcher.Registry.get(Byte.class); //Found this through google, needed for some stupid reason
+
+                        dataWatcher.setEntity(player); //Set the new data watcher's target
+
+                        dataWatcher.setObject(0, serializer, (byte) (0x40)); //Set status to glowing, found on protocol page
 
 
-                    ProtocolManager Manager = ProtocolLibrary.getProtocolManager();
+                        final List<WrappedDataValue> wrappedDataValueList = new ArrayList<>();
 
-                    PacketContainer packet = Manager.createPacket(PacketType.Play.Server.ENTITY_METADATA);
+                        for (final WrappedWatchableObject entry : dataWatcher.getWatchableObjects()) {
+                            if (entry == null) continue;
 
-                    packet.getIntegers().write(0, glowReceiver.getEntityId()); //Set packet's entity id                 //not sure whether this is the person who sees glow or person who gets glow.
+                            final WrappedDataWatcher.WrappedDataWatcherObject watcherObject = entry.getWatcherObject();
+                            wrappedDataValueList.add(
+                                    new WrappedDataValue(
+                                            watcherObject.getIndex(),
+                                            watcherObject.getSerializer(),
+                                            entry.getRawValue()
+                                    )
+                            );
+                        }
 
-                    WrappedDataWatcher dataWatcher = new WrappedDataWatcher(); //Create data watcher, the Entity Metadata packet requires this
-
-                    WrappedDataWatcher.Serializer serializer = WrappedDataWatcher.Registry.get(Byte.class); //Found this through google, needed for some stupid reason
-
-                    dataWatcher.setEntity(player); //Set the new data watcher's target
-
-                    dataWatcher.setObject(0, serializer, (byte) (0x40)); //Set status to glowing, found on protocol page
+                        packet.getDataValueCollectionModifier().write(0, wrappedDataValueList);
 
 
-                    final List<WrappedDataValue> wrappedDataValueList = new ArrayList<>();
-
-                    for (final WrappedWatchableObject entry : dataWatcher.getWatchableObjects()) {
-                        if (entry == null) continue;
-
-                        final WrappedDataWatcher.WrappedDataWatcherObject watcherObject = entry.getWatcherObject();
-                        wrappedDataValueList.add(
-                                new WrappedDataValue(
-                                        watcherObject.getIndex(),
-                                        watcherObject.getSerializer(),
-                                        entry.getRawValue()
-                                )
-                        );
+                        Manager.sendServerPacket(player, packet);
                     }
+            }
 
-                    packet.getDataValueCollectionModifier().write(0, wrappedDataValueList);
-
-
-                    Manager.sendServerPacket(player, packet);
-                }
         }
-
     }
 
     public static void removeLocalGlow(Player player, int lvl)

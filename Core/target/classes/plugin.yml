@@ -1,0 +1,6 @@
+name: core
+version: 1.0
+author: Barret
+main: me.barret.Core
+description: fuck you
+api-version: 1.19

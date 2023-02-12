@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/Champions/Champions.iml" filepath="$PROJECT_DIR$/Champions/Champions.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Clans/Clans.iml" filepath="$PROJECT_DIR$/Clans/Clans.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Core/Core.iml" filepath="$PROJECT_DIR$/Core/Core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Severed-Clans.iml" filepath="$PROJECT_DIR$/Severed-Clans.iml" />
+    </modules>
+  </component>
+</project>

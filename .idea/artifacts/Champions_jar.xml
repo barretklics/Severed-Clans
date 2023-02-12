@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="Champions:jar">
+    <output-path>$USER_HOME$/Desktop/SVRD Clans Export/</output-path>
+    <root id="archive" name="Champions.jar">
+      <element id="module-output" name="Champions" />
+      <element id="extracted-dir" path="$USER_HOME$/Desktop/Current Spigot Version/BungeeCord.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$USER_HOME$/Desktop/Current Spigot Version/spigot-api-1.19.3-R0.1-SNAPSHOT.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

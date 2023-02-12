@@ -46,7 +46,7 @@
                         </goals>
                         <configuration>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
-                            <outputFile>C:\Users\cerav\Desktop\Server 1.19.3\plugins\Champions.jar</outputFile>
+                            <outputFile>C:\Users\ofzel\Desktop\Current Spigot Version\plugins\Champions.jar</outputFile>
                         </configuration>
                     </execution>
                 </executions>
