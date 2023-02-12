@@ -4,9 +4,11 @@ C:\Users\ofzel\IdeaProjects\Severed-Clans\Core\src\main\java\me\barret\gui\Butto
 C:\Users\ofzel\IdeaProjects\Severed-Clans\Core\src\main\java\me\barret\rightClick\rightClickListener.java
 C:\Users\ofzel\IdeaProjects\Severed-Clans\Core\src\main\java\me\barret\gui\Gui.java
 C:\Users\ofzel\IdeaProjects\Severed-Clans\Core\src\main\java\me\barret\gui\ButtonClickEvent.java
+C:\Users\ofzel\IdeaProjects\Severed-Clans\Core\src\main\java\me\barret\utils\UtilEntityTypeColor.java
 C:\Users\ofzel\IdeaProjects\Severed-Clans\Core\src\main\java\me\barret\utils\UtilSound.java
 C:\Users\ofzel\IdeaProjects\Severed-Clans\Core\src\main\java\me\barret\utils\UtilInventory.java
 C:\Users\ofzel\IdeaProjects\Severed-Clans\Core\src\main\java\me\barret\utils\UtilItem.java
+C:\Users\ofzel\IdeaProjects\Severed-Clans\Core\src\main\java\me\barret\utils\aSlashAnParser.java
 C:\Users\ofzel\IdeaProjects\Severed-Clans\Core\src\main\java\me\barret\Core.java
 C:\Users\ofzel\IdeaProjects\Severed-Clans\Core\src\main\java\me\barret\rightClick\rightClickManager.java
 C:\Users\ofzel\IdeaProjects\Severed-Clans\Core\src\main\java\me\barret\utils\UtilArmor.java
@@ -18,6 +20,7 @@ C:\Users\ofzel\IdeaProjects\Severed-Clans\Core\src\main\java\me\barret\cooldown\
 C:\Users\ofzel\IdeaProjects\Severed-Clans\Core\src\main\java\me\barret\energy\energyManager.java
 C:\Users\ofzel\IdeaProjects\Severed-Clans\Core\src\main\java\me\barret\cooldown\cooldownListener.java
 C:\Users\ofzel\IdeaProjects\Severed-Clans\Core\src\main\java\me\barret\energy\energyListener.java
+C:\Users\ofzel\IdeaProjects\Severed-Clans\Core\src\main\java\me\barret\utils\UtilDamageMessage.java
 C:\Users\ofzel\IdeaProjects\Severed-Clans\Core\src\main\java\me\barret\utils\UtilEntity.java
 C:\Users\ofzel\IdeaProjects\Severed-Clans\Core\src\main\java\me\barret\utils\UtilMessage.java
 C:\Users\ofzel\IdeaProjects\Severed-Clans\Core\src\main\java\me\barret\utils\EntityCreator.java

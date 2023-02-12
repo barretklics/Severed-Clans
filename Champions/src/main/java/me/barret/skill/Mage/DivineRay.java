@@ -224,6 +224,10 @@ public class DivineRay extends Skill implements interactSkill
 							p.getWorld().playSound(iterateLocation,Sound.BLOCK_AMETHYST_BLOCK_CHIME,(float) 1.8,(float) 1.8);
 							resetDamageToStandard(p);
 							p.sendMessage("The divine ray traveled " + (int) distanceTraveled + " blocks along " + bounces + " bounces.");
+							//public static void use(Player p, String skillname)
+							//	{
+							//		p.sendMessage(ChatColor.DARK_AQUA + "[" + ChatColor.AQUA + "Skill" + ChatColor.DARK_AQUA + "]" + ChatColor.GRAY + " You used " + ChatColor.GREEN + skillname);
+							//	}
 							killAllCubes();
 							canIterate.put(p, false);
 							secondActivate.put(p,false);

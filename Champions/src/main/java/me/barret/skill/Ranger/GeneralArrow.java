@@ -1,4 +1,4 @@
-package me.barret.skill.Assassin;
+package me.barret.skill.Ranger;
 
 import me.barret.Champions;
 import me.barret.build.BuildChangeEvent;
@@ -8,7 +8,6 @@ import me.barret.kits.Kit;
 import me.barret.kits.kitChangeEvent;
 import me.barret.kits.kitManager;
 import me.barret.skill.Skill;
-import me.barret.skill.interactSkill;
 import me.barret.user.userManager;
 import org.bukkit.*;
 import org.bukkit.entity.*;
@@ -21,18 +20,17 @@ import me.barret.user.user;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
-public class PoisonArrow extends Skill
+public class GeneralArrow extends Skill
 {
-    private static Kit skillKit = kitManager.getKitFromString("Assassin"); 		//sets class for skill to Assassin
+    private static Kit skillKit = kitManager.getKitFromString("Ranger"); 		//sets class for skill to Assassin
 
     private static SkillType skillType = SkillType.BOW; 						//sets skill type to bow skill
 
-    static String skillName = "Poison Arrow";
+    static String skillName = "General Arrow";
 
-    static String[] description = {"Prepare a poison arrow. Your next arrow will", "poison an enemy"};
+    static String[] description = {"Prepare a general arrow. Your next arrow will", "do something"};
 
     static int MaxLevel = 3;
 
@@ -46,15 +44,11 @@ public class PoisonArrow extends Skill
 
     private static HashMap<Player, Arrow> firedArrow = new HashMap<Player, Arrow>();
 
-    public PoisonArrow(Champions i)
+    public GeneralArrow(Champions i)
     {
         super(i, skillKit, skillName, skillType, description, MaxLevel);
 
     }
-
-    // playerLevel.put(p,3); //HARDCODED 3 BECAUSE BOW SKILLS DONT RETURN LEVEL PROPERLY FOR SOME REASON?
-    //IN ON BUILD CHANGE AT BOTTOM OF THIS FILE
-
     @EventHandler
     public void prepareArrow(PlayerInteractEvent e) {
 
@@ -118,7 +112,7 @@ public class PoisonArrow extends Skill
                     //change particle or particle color here
 
                     Arrow arrow = firedArrow.get(p);
-                    Particle.DustTransition dustTransition = new Particle.DustTransition(Color.fromRGB(0, 255, 0), Color.fromRGB(255, 255, 255), 1.0F); //green fade to white (poison)
+                    Particle.DustTransition dustTransition = new Particle.DustTransition(Color.fromRGB(0, 0, 0), Color.fromRGB(255, 255, 255), 1.0F); //black fade to white default
                     p.getWorld().spawnParticle(Particle.DUST_COLOR_TRANSITION, arrow.getLocation(), 50, 0,0,0,0,dustTransition,true);
                     //spawnParticle(Particle particle, Location location, int count, double offsetX, double offsetY, double offsetZ, double extra, T data, boolean force)
 
@@ -135,7 +129,7 @@ public class PoisonArrow extends Skill
                     Arrow arrow = firedArrow.get(p);
                     if (arrow.getLocation().getBlock().equals(Material.WATER) || arrow.getLocation().getBlock().equals(Material.WATER_CAULDRON));
                     {
-                        //do nothing
+                        //do something
                     }
                 }
             }
@@ -150,7 +144,7 @@ public class PoisonArrow extends Skill
                     Arrow arrow = firedArrow.get(p);
                     if (arrow.getLocation().getBlock().equals(Material.LAVA) || arrow.getLocation().getBlock().equals(Material.LAVA_CAULDRON));
                     {
-                        //do nothing
+                        //do something
                     }
                 }
             }
@@ -201,14 +195,11 @@ public class PoisonArrow extends Skill
 
         //do something if arrow hits entity
 
-        hitEntity.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 120 - playerLevel.get(p)*20,   playerLevel.get(p) - 1)); //poison effect on hit entity
-        p.sendMessage("level: "+playerLevel.get(p));
-
         //call damage message here
 
-        ArrayList<Entity> damagedEntities = new ArrayList<Entity>() {};
-        damagedEntities.add(hitEntity);
-        me.barret.utils.UtilDamageMessage.damageMessage(p,damagedEntities,skillName,"poisoned");
+        // ArrayList<Entity> damagedEntities = new ArrayList<Entity>() {};
+        // damagedEntities.add(Entity);
+        // me.barret.utils.UtilDamageMessage.damageMessage(p,damagedEntities,skillName);
     }
 
     public void doBlockHitEffect(Player p, Location blockHitLocation)
@@ -217,19 +208,14 @@ public class PoisonArrow extends Skill
 
         //call util damage message here
 
-        ArrayList<Entity> damagedEntities = new ArrayList<Entity>() {};
-        me.barret.utils.UtilDamageMessage.damageMessage(p,damagedEntities,skillName,"poisoned");
-
-        //do nothing
+        // ArrayList<Entity> damagedEntities = new ArrayList<Entity>() {};
+        // damagedEntities.add(Entity);
+        // me.barret.utils.UtilDamageMessage.damageMessage(p,damagedEntities,skillName);
     }
 
     public void hitEntityCosmetics(Player p, LivingEntity hitEntity, Location hitLocation)
     {
         //do cosmetic something if arrow hits entity
-
-
-        p.getWorld().playSound(hitLocation, Sound.ENTITY_FOX_SPIT,(float)1.8,(float)0.8);
-        p.getWorld().spawnParticle(Particle.SNEEZE, hitEntity.getLocation(), 50); //summons exploding green particle on hit
 
     }
 
@@ -237,7 +223,6 @@ public class PoisonArrow extends Skill
     {
         //do cosmetic something if arrow hits block
 
-        //do nothing
     }
 
 
@@ -261,7 +246,7 @@ public class PoisonArrow extends Skill
         preparedArrowFlying.put(p,false);
 
 
-        playerLevel.put(p,3); //HARDCODED 3 BECAUSE BOW SKILLS DONT RETURN LEVEL PROPERLY FOR SOME REASON?
+        playerLevel.put(p,u.getCurrentBuild().getBow().getLevel()); // DEBUG STATIC 3 right now, CHANGE TO VARIABLE VALUE LATER, USER CALL IS BROKEN RN
 
         //u.getCurrentSkills().getBow().getLevel(); returns 0 ....
 

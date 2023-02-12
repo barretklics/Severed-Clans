@@ -192,8 +192,7 @@ public class BinaryExplosive extends Skill implements interactSkill {
     }
 
     public void explosionEntityDamager(Player p, int lvl, Location explosionLoc) {
-        ArrayList<Entity> damagedEntities = new ArrayList<Entity>() {
-        };
+        ArrayList<Entity> damagedEntities = new ArrayList<Entity>() {};
         for (Entity e : p.getWorld().getNearbyEntities(explosionLoc, 5, 5, 5)) {
             if (e instanceof LivingEntity) {
 
@@ -209,7 +208,7 @@ public class BinaryExplosive extends Skill implements interactSkill {
 
         }
 
-        me.barret.utils.UtilDamageMessage.damageMessage(p, damagedEntities, skillName);
+        me.barret.utils.UtilDamageMessage.damageMessage(p, damagedEntities, skillName,"damaged");
 
     }
 
